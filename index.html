@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Scan-to-Print | Cyber Cafe & CSC Portal</title>
+    <title>Smart Scan-to-Print Pro v3.0 | Cyber Cafe & CSC Portal</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -21,7 +21,7 @@
     <!-- QRCode.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
-    <!-- Cropper.js for Image Crop & Rotate -->
+    <!-- Cropper.js for Standard Rectangle Crop & Rotate -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 
@@ -56,13 +56,48 @@
             animation: pulseRing 2s infinite;
         }
 
-        /* Cropper Container Height */
+        /* Studio Work Area Background */
         .cropper-wrapper {
-            max-height: 55vh;
-            min-height: 300px;
-            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            max-height: 56vh;
+            min-height: 320px;
+            background-image: radial-gradient(#334155 1px, transparent 1px);
             background-size: 16px 16px;
             background-color: #0f172a;
+            position: relative;
+            user-select: none;
+            touch-action: none;
+        }
+
+        /* 4-Point Perspective Corner Handles */
+        .persp-handle {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            margin-left: -15px;
+            margin-top: -15px;
+            border-radius: 9999px;
+            background: rgba(6, 182, 212, 0.25);
+            border: 3px solid #22d3ee;
+            box-shadow: 0 0 12px rgba(34, 211, 238, 0.9);
+            cursor: grab;
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s ease;
+            touch-action: none;
+        }
+        .persp-handle::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 9999px;
+            background: #ffffff;
+        }
+        .persp-handle:active {
+            cursor: grabbing;
+            transform: scale(1.25);
+            background: rgba(34, 211, 238, 0.5);
         }
 
         /* Dedicated Print Media Styling */
@@ -103,23 +138,23 @@
                     <i class="fa-solid fa-print"></i>
                 </div>
                 <div>
-                    <div class="flex items-center gap-2">
-                        <h1 class="font-bold text-lg tracking-tight leading-none">Smart Scan-to-Print</h1>
-                        <span class="text-[11px] bg-amber-500/20 text-amber-300 border border-amber-400/30 px-2 py-0.5 rounded-full font-semibold">PRO STUDIO</span>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <h1 class="font-bold text-lg tracking-tight leading-none">Smart Scan-to-Print Pro</h1>
+                        <span class="text-[11px] bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 px-2 py-0.5 rounded-full font-semibold">v3.0 • 4-Point Perspective + 10m Auto-Delete</span>
                     </div>
-                    <p class="text-xs text-slate-400 mt-0.5">QR स्कैन करें • डॉक्यूमेंट भेजें • क्रॉप और तुरंत प्रिंट करें</p>
+                    <p class="text-xs text-slate-400 mt-0.5">15MB+ Chunked अपलोड • डायरेक्ट कैमरा • पर्सपेक्टिव क्रॉप • 10 मिनट ऑटो-डिलीट</p>
                 </div>
             </div>
 
             <!-- Mode Toggle Switch (For Testing & Dual Use) -->
             <div class="flex items-center gap-2 bg-slate-800 p-1 rounded-xl border border-slate-700">
                 <button id="tab-admin-btn" onclick="switchViewMode('admin')" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center gap-1.5 bg-blue-600 text-white shadow">
-                    <i class="fa-solid fa-desktop"></i>
-                    <span>Shop Admin (दुकानदार)</span>
+                    <i class="fa-solid fa-store"></i>
+                    <span>🏪 Shop Admin (दुकानदार)</span>
                 </button>
                 <button id="tab-customer-btn" onclick="switchViewMode('customer')" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center gap-1.5 text-slate-300 hover:text-white">
                     <i class="fa-solid fa-mobile-screen-button"></i>
-                    <span>Customer Mobile (ग्राहक)</span>
+                    <span>📱 Customer Mobile (ग्राहक)</span>
                 </button>
             </div>
         </div>
@@ -152,7 +187,7 @@
                     </div>
 
                     <!-- Permanent Shop ID Customizer -->
-                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 mb-4">
+                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 mb-3">
                         <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
                             आपकी स्थायी दुकान आईडी (Permanent Shop ID)
                         </label>
@@ -162,9 +197,23 @@
                                 Save ID
                             </button>
                         </div>
-                        <p class="text-[11px] text-slate-500 mt-1.5">
-                            <i class="fa-solid fa-circle-info text-blue-500"></i> यह ID सेव रहती है ताकि आपका प्रिंटेड QR कोड हमेशा काम करे।
-                        </p>
+                    </div>
+
+                    <!-- Global Auto-Delete Timer Setting -->
+                    <div class="bg-amber-50/70 p-3 rounded-xl border border-amber-200/80 mb-4 flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-clock-rotate-left text-amber-600"></i>
+                            <div>
+                                <span class="text-xs font-bold text-slate-800 block">Auto-Delete Timer (प्राइवेसी)</span>
+                                <span class="text-[11px] text-slate-500">फाइल अपने-आप डिलीट होने का समय</span>
+                            </div>
+                        </div>
+                        <select id="auto-delete-minutes-select" onchange="updateGlobalAutoDeleteSetting()" class="bg-white border border-amber-300 text-slate-800 text-xs font-bold rounded-lg px-2.5 py-1.5 focus:outline-none">
+                            <option value="5">5 Minutes</option>
+                            <option value="10" selected>10 Minutes</option>
+                            <option value="15">15 Minutes</option>
+                            <option value="30">30 Minutes</option>
+                        </select>
                     </div>
 
                     <!-- QR Code Display Box -->
@@ -195,19 +244,22 @@
                 <div class="bg-gradient-to-br from-indigo-900 to-slate-900 text-white rounded-2xl p-5 shadow-sm">
                     <div class="flex items-start justify-between gap-3">
                         <div>
-                            <span class="text-[11px] uppercase tracking-wider font-bold text-indigo-300">Instant Demo Tool</span>
-                            <h3 class="font-bold text-base mt-0.5">सिस्टम और क्रॉप स्टूडियो टेस्ट करें</h3>
-                            <p class="text-xs text-slate-300 mt-1">बिना दूसरे फोन के अभी एक सैंपल आधार/डॉक्यूमेंट नोटिफिकेशन भेजकर प्रिंट और क्रॉप चेक करें।</p>
+                            <span class="text-[11px] uppercase tracking-wider font-bold text-cyan-300">Instant Demo & Verification</span>
+                            <h3 class="font-bold text-base mt-0.5">पर्सपेक्टिव क्रॉप और 4MB ट्रांसफर टेस्ट करें</h3>
+                            <p class="text-xs text-slate-300 mt-1">तिरछा (Skewed) सैंपल आधार कार्ड मंगाकर 4-कोनों वाला पर्सपेक्टिव क्रॉप और 10-मिनट टाइमर अभी चेक करें।</p>
                         </div>
                         <i class="fa-solid fa-bolt text-2xl text-amber-400"></i>
                     </div>
-                    <div class="mt-4 flex flex-wrap gap-2">
-                        <button onclick="triggerSampleIncomingJob()" class="w-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs sm:text-sm py-2.5 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow">
-                            <i class="fa-solid fa-bell"></i> ⚡ Test Sample Notification (सैंपल डॉक्यूमेंट मंगाएं)
+                    <div class="mt-4 flex flex-col gap-2">
+                        <button onclick="triggerSampleIncomingJob()" class="w-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-2 shadow">
+                            <i class="fa-solid fa-crop-simple"></i> ⚡ Test Skewed ID Card (पर्सपेक्टिव क्रॉप डेमो)
+                        </button>
+                        <button onclick="simulateLargeChunkedTransfer()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-2 shadow">
+                            <i class="fa-solid fa-gauge-high"></i> ⚡ Test 4.2 MB Chunked Transfer (0-100%)
                         </button>
                         <label class="w-full bg-white/10 hover:bg-white/20 text-white font-semibold text-xs py-2 px-4 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer border border-white/15">
                             <i class="fa-solid fa-folder-open"></i> कंप्यूटर से डायरेक्ट फोटो/PDF खोलें
-                            <input type="file" accept="image/*,application/pdf" class="hidden" onchange="loadLocalFileIntoQueue(event)">
+                            <input type="file" accept="image/*,application/pdf" multiple class="hidden" onchange="loadLocalFileIntoQueue(event)">
                         </label>
                     </div>
                 </div>
@@ -223,11 +275,11 @@
                         <div class="flex items-center gap-2.5">
                             <div class="relative flex items-center justify-center w-9 h-9 rounded-xl bg-blue-100 text-blue-600">
                                 <i class="fa-solid fa-bell text-lg"></i>
-                                <span id="queue-count-badge" class=" -top-1 -right-1 absolute bg-red-600 text-white text-[11px] font-bold w-5 h-5 rounded-full flex items-center justify-center">0</span>
+                                <span id="queue-count-badge" class="-top-1 -right-1 absolute bg-red-600 text-white text-[11px] font-bold w-5 h-5 rounded-full flex items-center justify-center">0</span>
                             </div>
                             <div>
                                 <h2 class="font-bold text-slate-800 text-base sm:text-lg">Incoming Print Queue (आए हुए डॉक्यूमेंट)</h2>
-                                <p class="text-xs text-slate-500">कस्टमर द्वारा फाइल भेजते ही बीप साउंड के साथ यहाँ कार्ड दिखेगा</p>
+                                <p class="text-xs text-slate-500">हर डॉक्यूमेंट 10 मिनट बाद सुरक्षा के लिए अपने-आप डिलीट हो जाएगा</p>
                             </div>
                         </div>
 
@@ -241,6 +293,9 @@
                         </div>
                     </div>
 
+                    <!-- Live Incoming Chunk Receiving Progress Container -->
+                    <div id="admin-incoming-progress-list" class="px-5 pt-3 space-y-2.5 empty:hidden"></div>
+
                     <!-- Empty State -->
                     <div id="empty-queue-state" class="flex-grow flex flex-col items-center justify-center text-center p-10 my-6">
                         <div class="w-20 h-20 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center text-3xl mb-4 border border-blue-100">
@@ -248,11 +303,16 @@
                         </div>
                         <h3 class="font-bold text-slate-700 text-lg">अभी कोई प्रिंट जॉब कतार में नहीं है</h3>
                         <p class="text-sm text-slate-500 max-w-md mt-1">
-                            जब कोई ग्राहक QR कोड स्कैन करके अपने फोन से फोटो या PDF भेजेगा, तो वह तुरंत यहाँ नोटिफिकेशन के रूप में दिखाई देगा।
+                            जब कोई ग्राहक QR कोड स्कैन करके कैमरे से फोटो खींचेगा या 4MB-15MB की PDF भेजेगा, तो वह लाइव प्रोग्रेस और 10-मिनट टाइमर के साथ यहाँ दिखेगा।
                         </p>
-                        <button onclick="triggerSampleIncomingJob()" class="mt-5 text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl transition">
-                            + अभी डेमो डॉक्यूमेंट टेस्ट करें
-                        </button>
+                        <div class="flex flex-wrap justify-center gap-2 mt-5">
+                            <button onclick="triggerSampleIncomingJob()" class="text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl transition">
+                                + तिरछा सैंपल आधार मंगाएं (Perspective Crop Test)
+                            </button>
+                            <button onclick="simulateLargeChunkedTransfer()" class="text-xs font-semibold text-emerald-700 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 px-4 py-2 rounded-xl transition">
+                                + 4.2 MB फाइल ट्रांसफर टेस्ट करें
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Live Jobs Container -->
@@ -277,7 +337,7 @@
                         <span id="cust-shop-badge" class="text-xs font-mono bg-slate-900/40 px-2.5 py-1 rounded-lg"></span>
                     </div>
                     <h2 class="text-xl sm:text-2xl font-bold mt-3">डॉक्यूमेंट प्रिंट के लिए भेजें</h2>
-                    <p class="text-xs sm:text-sm text-blue-100 mt-1">अपनी फाइल चुनें और सीधे दुकानदार के कंप्यूटर पर भेजें</p>
+                    <p class="text-xs sm:text-sm text-blue-100 mt-1">कैमरे से फोटो खींचें या बड़ी PDF चुनें • 10 मिनट बाद फाइल अपने-आप डिलीट हो जाती है</p>
                 </div>
 
                 <!-- Upload Form Body -->
@@ -344,22 +404,60 @@
                         </select>
                     </div>
 
-                    <!-- File Picker Dropzone -->
+                    <!-- DEDICATED CAMERA & FILE PICKER BUTTONS -->
                     <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
-                            5. डॉक्यूमेंट या फोटो चुनें (Select Files) <span class="text-red-500">*</span>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
+                            5. डॉक्यूमेंट कैसे अपलोड करना है? (Choose Option) <span class="text-red-500">*</span>
                         </label>
-                        <label for="cust-file-input" class="border-2 border-dashed border-blue-400 hover:border-blue-600 bg-blue-50/50 hover:bg-blue-50 rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition">
-                            <div class="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center text-xl mb-2 shadow">
-                                <i class="fa-solid fa-cloud-arrow-up"></i>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <!-- Option A: Direct Camera Capture (Native Mobile Rear Camera + Fallback) -->
+                            <div class="flex flex-col gap-1.5">
+                                <label for="camera-input" class="border-2 border-emerald-500 bg-emerald-50/80 hover:bg-emerald-100 active:scale-[0.98] rounded-2xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition shadow-sm h-full">
+                                    <div class="w-12 h-12 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xl mb-2 shadow">
+                                        <i class="fa-solid fa-camera"></i>
+                                    </div>
+                                    <span class="font-bold text-sm text-emerald-950">📸 Take Photo with Camera</span>
+                                    <span class="text-[11px] text-emerald-700 mt-0.5 font-medium">कैमरे से सीधे फोटो खींचें</span>
+                                    <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden" onchange="handleCustomerFileInput(this, 'camera')">
+                                </label>
+                                <button type="button" onclick="openLiveCameraModal()" class="py-1.5 px-2.5 rounded-xl bg-emerald-900/10 hover:bg-emerald-900/20 text-emerald-900 text-[11px] font-bold transition flex items-center justify-center gap-1 border border-emerald-500/30">
+                                    <i class="fa-solid fa-video text-emerald-600"></i> इन-ऐप लाइव कैमरा खोलें (Fallback)
+                                </button>
                             </div>
-                            <span class="font-bold text-sm text-slate-800">फोटो खींचें या फाइल सेलेक्ट करें</span>
-                            <span class="text-xs text-slate-500 mt-0.5">JPG, PNG, या PDF (एक या अधिक फाइलें)</span>
-                            <input type="file" id="cust-file-input" accept="image/*,application/pdf" multiple class="hidden" onchange="updateSelectedFilesPreview()">
-                        </label>
-                        
-                        <!-- Selected Files Preview List -->
-                        <div id="cust-selected-files" class="mt-3 space-y-1.5 hidden"></div>
+
+                            <!-- Option B: File / PDF Picker from Gallery or Storage -->
+                            <div class="flex flex-col gap-1.5">
+                                <label for="file-input" class="border-2 border-blue-500 bg-blue-50/80 hover:bg-blue-100 active:scale-[0.98] rounded-2xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition shadow-sm h-full">
+                                    <div class="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center text-xl mb-2 shadow">
+                                        <i class="fa-solid fa-folder-open"></i>
+                                    </div>
+                                    <span class="font-bold text-sm text-blue-950">📁 Choose File / PDF</span>
+                                    <span class="text-[11px] text-blue-700 mt-0.5 font-medium">गैलरी फोटो या बड़ी PDF चुनें (15MB+)</span>
+                                    <input type="file" id="file-input" accept="image/*,application/pdf,.pdf,.jpg,.jpeg,.png" multiple class="hidden" onchange="handleCustomerFileInput(this, 'gallery')">
+                                </label>
+                                <div class="py-1.5 px-2.5 rounded-xl bg-blue-900/5 text-blue-900 text-[11px] font-medium text-center border border-blue-500/20">
+                                    <i class="fa-solid fa-shield-halved text-blue-600"></i> 64KB Chunked 100% Safe Transfer
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Smart Auto-Compression Toggle for Heavy Camera Photos -->
+                        <div class="mt-3 bg-amber-50/90 border border-amber-200 rounded-xl p-3 flex items-center justify-between gap-3">
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-bolt text-amber-500 mt-0.5"></i>
+                                <div>
+                                    <label for="auto-optimize-toggle" class="text-xs font-bold text-slate-800 cursor-pointer block">
+                                        ⚡ Smart Image Optimizer (2400px Crisp Print HD)
+                                    </label>
+                                    <p class="text-[11px] text-slate-600">8MB-12MB कैमरा फोटो को ~800KB HD में बदलें या ऑफ करके ओरिजिनल फाइल भेजें</p>
+                                </div>
+                            </div>
+                            <input type="checkbox" id="auto-optimize-toggle" checked class="w-5 h-5 accent-blue-600 rounded cursor-pointer shrink-0">
+                        </div>
+
+                        <!-- Instant Thumbnail / PDF Preview Cards Before Sending -->
+                        <div id="cust-selected-files" class="mt-3 space-y-2.5 hidden"></div>
                     </div>
 
                     <!-- Send Button -->
@@ -367,6 +465,21 @@
                         <i class="fa-solid fa-paper-plane"></i>
                         <span>Send for Print (प्रिंट के लिए भेजें)</span>
                     </button>
+
+                    <!-- Real-Time Chunked Transfer Progress Bar Box -->
+                    <div id="cust-progress-box" class="hidden bg-slate-900 text-white rounded-2xl p-4 space-y-2 shadow-md">
+                        <div class="flex items-center justify-between text-xs font-semibold">
+                            <span id="cust-progress-title" class="truncate pr-2 text-blue-300">Sending file...</span>
+                            <span id="cust-progress-percent" class="font-mono text-emerald-400 font-bold">0%</span>
+                        </div>
+                        <div class="w-full h-3 bg-slate-700 rounded-full overflow-hidden">
+                            <div id="cust-progress-bar" class="h-full bg-gradient-to-r from-blue-500 to-emerald-400 transition-all duration-150" style="width: 0%"></div>
+                        </div>
+                        <div class="flex items-center justify-between text-[11px] text-slate-400 font-mono">
+                            <span id="cust-progress-bytes">0 KB / 0 KB</span>
+                            <span id="cust-progress-chunks">Chunk 0/0</span>
+                        </div>
+                    </div>
 
                     <!-- Transfer Status Box -->
                     <div id="cust-transfer-status" class="hidden rounded-xl p-3.5 text-center text-sm font-semibold"></div>
@@ -377,86 +490,186 @@
     </main>
 
     <!-- ========================================================= -->
-    <!-- 3. SMART PRINT STUDIO MODAL (CROP, ROTATE, B&W ENHANCE)   -->
+    <!-- 3. LIVE WEBRTC CAMERA CAPTURE MODAL (FALLBACK SCANNER)    -->
     <!-- ========================================================= -->
-    <div id="studio-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-2 sm:p-4 no-print">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[95vh] flex flex-col overflow-hidden border border-slate-700">
+    <div id="live-camera-modal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-sm hidden flex items-center justify-center p-3 no-print">
+        <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-md w-full overflow-hidden shadow-2xl flex flex-col">
+            <div class="px-5 py-3.5 bg-slate-800 text-white flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-camera text-emerald-400"></i>
+                    <span class="font-bold text-sm">Live Document Scanner Camera</span>
+                </div>
+                <button onclick="closeLiveCameraModal()" class="w-8 h-8 rounded-full bg-slate-700 hover:bg-red-600 text-white flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="relative bg-black aspect-[3/4] max-h-[65vh] w-full flex items-center justify-center overflow-hidden">
+                <video id="live-camera-video" autoplay playsinline muted class="w-full h-full object-cover"></video>
+                <!-- Document Alignment Frame Overlay -->
+                <div class="absolute inset-6 border-2 border-dashed border-emerald-400/80 rounded-2xl pointer-events-none flex items-end justify-center pb-3">
+                    <span class="bg-black/60 text-emerald-300 text-[11px] px-3 py-1 rounded-full">डॉक्यूमेंट को बॉक्स के अंदर रखें (तिरछा भी चलेगा)</span>
+                </div>
+            </div>
+
+            <div class="p-4 bg-slate-900 flex items-center justify-between gap-3">
+                <button type="button" onclick="switchCameraFacingMode()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-3 px-4 rounded-xl border border-slate-700 flex items-center gap-1.5">
+                    <i class="fa-solid fa-camera-rotate"></i> Flip Camera
+                </button>
+                <button type="button" onclick="captureLiveCameraFrame()" class="flex-grow bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 px-5 rounded-xl text-sm shadow-lg flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-circle-dot"></i> 📸 फोटो खींचें (Capture)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- 4. SMART PRINT STUDIO MODAL (4-POINT PERSPECTIVE + CROP)  -->
+    <!-- ========================================================= -->
+    <div id="studio-modal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm hidden flex items-center justify-center p-2 sm:p-4 no-print">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[96vh] flex flex-col overflow-hidden border border-slate-700">
             
-            <!-- Modal Header -->
-            <div class="bg-slate-900 text-white px-5 py-3.5 flex items-center justify-between">
+            <!-- Modal Header with Mode Switcher -->
+            <div class="bg-slate-900 text-white px-4 sm:px-5 py-3 flex flex-wrap items-center justify-between gap-3">
                 <div class="flex items-center gap-2.5">
-                    <span class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
+                    <span class="w-8 h-8 rounded-lg bg-cyan-600 flex items-center justify-center">
                         <i class="fa-solid fa-wand-magic-sparkles"></i>
                     </span>
                     <div>
-                        <h3 class="font-bold text-base leading-none">Smart Print Studio (क्रॉप, सीधा और साफ करें)</h3>
-                        <p id="studio-doc-title" class="text-xs text-slate-400 mt-0.5">Customer Document</p>
+                        <h3 class="font-bold text-sm sm:text-base leading-none">Smart Print Studio (पर्सपेक्टिव क्रॉप, सीधा और साफ करें)</h3>
+                        <p id="studio-doc-title" class="text-[11px] text-slate-400 mt-0.5">Customer Document</p>
                     </div>
                 </div>
+
+                <!-- Crop Mode Switcher: 4-Point Perspective vs Standard Rectangle -->
+                <div class="flex items-center gap-1.5 bg-slate-800 p-1 rounded-xl border border-slate-700">
+                    <button id="mode-persp-btn" type="button" onclick="switchStudioCropMode('perspective')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 bg-cyan-500 text-slate-950 shadow">
+                        <i class="fa-solid fa-vector-square"></i>
+                        <span>📐 4-Point Perspective Crop (तिरछा सीधा करें)</span>
+                    </button>
+                    <button id="mode-rect-btn" type="button" onclick="switchStudioCropMode('rectangle')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 text-slate-300 hover:text-white">
+                        <i class="fa-solid fa-crop-simple"></i>
+                        <span>🔲 Standard Rectangle Crop</span>
+                    </button>
+                </div>
+
                 <button onclick="closeStudioModal()" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-red-600 text-slate-300 hover:text-white transition flex items-center justify-center">
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
 
-            <!-- Modal Body (2 Columns: Left Cropper, Right Controls & Live Preview) -->
+            <!-- Modal Body (2 Columns: Left Interactive Canvas, Right Controls & Live Preview) -->
             <div class="flex-grow grid grid-cols-1 lg:grid-cols-12 overflow-y-auto">
                 
-                <!-- Left: Interactive Cropper Canvas (7 Cols) -->
+                <!-- Left: Interactive Workspace (7 Cols) -->
                 <div class="lg:col-span-7 p-4 bg-slate-900 flex flex-col justify-between">
-                    <div class="cropper-wrapper rounded-xl overflow-hidden flex items-center justify-center">
-                        <img id="studio-cropper-img" src="" alt="Editable Document" class="max-w-full max-h-[52vh] block">
-                    </div>
+                    
+                    <!-- A. 4-POINT PERSPECTIVE CROP WORKSPACE -->
+                    <div id="persp-workspace-container" class="flex flex-col flex-grow justify-between">
+                        <div id="persp-stage" class="cropper-wrapper rounded-xl overflow-hidden flex items-center justify-center relative">
+                            <div id="persp-inner-box" class="relative inline-block">
+                                <img id="persp-source-img" src="" alt="Perspective Source" class="max-w-full max-h-[50vh] block select-none pointer-events-none">
+                                
+                                <!-- SVG Polygon & Perspective Grid Overlay -->
+                                <svg id="persp-svg-overlay" class="absolute inset-0 w-full h-full pointer-events-none z-20">
+                                    <polygon id="persp-polygon" points="0,0 100,0 100,100 0,100" fill="rgba(6, 182, 212, 0.18)" stroke="#22d3ee" stroke-width="2.5" stroke-dasharray="6,4" />
+                                    <line id="persp-grid-h1" stroke="rgba(34,211,238,0.45)" stroke-width="1" />
+                                    <line id="persp-grid-h2" stroke="rgba(34,211,238,0.45)" stroke-width="1" />
+                                    <line id="persp-grid-v1" stroke="rgba(34,211,238,0.45)" stroke-width="1" />
+                                    <line id="persp-grid-v2" stroke="rgba(34,211,238,0.45)" stroke-width="1" />
+                                </svg>
 
-                    <!-- Quick Rotation & Aspect Ratio Bar -->
-                    <div class="mt-3 bg-slate-800/90 p-3 rounded-xl border border-slate-700 flex flex-wrap items-center justify-between gap-2">
-                        <!-- Rotate Buttons -->
-                        <div class="flex items-center gap-1.5">
-                            <button onclick="rotateCropper(-90)" class="bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1">
-                                <i class="fa-solid fa-rotate-left"></i> 90° Left
-                            </button>
-                            <button onclick="rotateCropper(90)" class="bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1">
-                                <i class="fa-solid fa-rotate-right"></i> 90° Right
-                            </button>
-                            <button onclick="resetCropperStudio()" class="bg-slate-700 hover:bg-slate-600 text-amber-300 text-xs font-semibold px-3 py-2 rounded-lg transition">
-                                Reset
-                            </button>
+                                <!-- 4 Draggable Corner Handles (TL, TR, BR, BL) -->
+                                <div id="handle-tl" data-corner="0" class="persp-handle" title="Top-Left Corner"></div>
+                                <div id="handle-tr" data-corner="1" class="persp-handle" title="Top-Right Corner"></div>
+                                <div id="handle-br" data-corner="2" class="persp-handle" title="Bottom-Right Corner"></div>
+                                <div id="handle-bl" data-corner="3" class="persp-handle" title="Bottom-Left Corner"></div>
+                            </div>
+
+                            <!-- Magnifier Loupe Bubble (Shows Zoomed Corner while Dragging) -->
+                            <div id="persp-loupe" class="hidden absolute top-3 left-3 w-28 h-28 rounded-full border-4 border-cyan-400 shadow-2xl overflow-hidden bg-slate-950 z-40 pointer-events-none">
+                                <canvas id="persp-loupe-canvas" width="112" height="112" class="w-full h-full"></canvas>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <div class="w-4 h-0.5 bg-red-500"></div>
+                                    <div class="h-4 w-0.5 bg-red-500 absolute"></div>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- Aspect Ratio Presets -->
-                        <div class="flex items-center gap-1.5 flex-wrap">
-                            <span class="text-[11px] text-slate-400 mr-1">Size Ratio:</span>
-                            <button onclick="setCropRatio(NaN)" class="bg-blue-600/30 hover:bg-blue-600 text-blue-200 hover:text-white border border-blue-500/40 text-xs px-2.5 py-1.5 rounded-lg transition">Free</button>
-                            <button onclick="setCropRatio(210/297)" class="bg-slate-700 hover:bg-blue-600 text-white text-xs px-2.5 py-1.5 rounded-lg transition">A4</button>
-                            <button onclick="setCropRatio(85.6/54)" class="bg-slate-700 hover:bg-blue-600 text-white text-xs px-2.5 py-1.5 rounded-lg transition">ID/Aadhaar</button>
-                            <button onclick="setCropRatio(35/45)" class="bg-slate-700 hover:bg-blue-600 text-white text-xs px-2.5 py-1.5 rounded-lg transition">Passport</button>
+                        <!-- Perspective Action Toolbar -->
+                        <div class="mt-3 bg-slate-800/95 p-3 rounded-xl border border-slate-700 flex flex-wrap items-center justify-between gap-2">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <button type="button" onclick="autoDetectPerspectiveCorners()" class="bg-slate-700 hover:bg-slate-600 text-cyan-300 text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1.5 border border-cyan-500/30">
+                                    <i class="fa-solid fa-wand-sparkles"></i> ✨ Auto-Detect / Reset 4 Corners
+                                </button>
+                                <button type="button" onclick="rotateSourceImage90()" class="bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1">
+                                    <i class="fa-solid fa-rotate-right"></i> Rotate 90°
+                                </button>
+                                <button id="undo-warp-btn" type="button" onclick="undoPerspectiveWarp()" class="hidden bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/40 text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1">
+                                    <i class="fa-solid fa-rotate-left"></i> Undo Warp
+                                </button>
+                            </div>
+
+                            <button type="button" onclick="applyPerspectiveWarp()" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs sm:text-sm px-4 py-2 rounded-xl shadow-md transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-check-double"></i> ✅ Apply Perspective Straighten (सीधा करें)
+                            </button>
                         </div>
                     </div>
+
+                    <!-- B. STANDARD RECTANGLE CROPPER WORKSPACE -->
+                    <div id="rect-workspace-container" class="hidden flex-col flex-grow justify-between">
+                        <div class="cropper-wrapper rounded-xl overflow-hidden flex items-center justify-center">
+                            <img id="studio-cropper-img" src="" alt="Editable Document" class="max-w-full max-h-[50vh] block">
+                        </div>
+
+                        <!-- Quick Rotation & Aspect Ratio Bar -->
+                        <div class="mt-3 bg-slate-800/90 p-3 rounded-xl border border-slate-700 flex flex-wrap items-center justify-between gap-2">
+                            <div class="flex items-center gap-1.5">
+                                <button type="button" onclick="rotateCropper(-90)" class="bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1">
+                                    <i class="fa-solid fa-rotate-left"></i> 90° Left
+                                </button>
+                                <button type="button" onclick="rotateCropper(90)" class="bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1">
+                                    <i class="fa-solid fa-rotate-right"></i> 90° Right
+                                </button>
+                                <button type="button" onclick="resetCropperStudio()" class="bg-slate-700 hover:bg-slate-600 text-amber-300 text-xs font-semibold px-3 py-2 rounded-lg transition">
+                                    Reset
+                                </button>
+                            </div>
+
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <span class="text-[11px] text-slate-400 mr-1">Ratio:</span>
+                                <button type="button" onclick="setCropRatio(NaN)" class="bg-blue-600/30 hover:bg-blue-600 text-blue-200 hover:text-white border border-blue-500/40 text-xs px-2.5 py-1.5 rounded-lg transition">Free</button>
+                                <button type="button" onclick="setCropRatio(210/297)" class="bg-slate-700 hover:bg-blue-600 text-white text-xs px-2.5 py-1.5 rounded-lg transition">A4</button>
+                                <button type="button" onclick="setCropRatio(85.6/54)" class="bg-slate-700 hover:bg-blue-600 text-white text-xs px-2.5 py-1.5 rounded-lg transition">ID/Aadhaar</button>
+                                <button type="button" onclick="setCropRatio(35/45)" class="bg-slate-700 hover:bg-blue-600 text-white text-xs px-2.5 py-1.5 rounded-lg transition">Passport</button>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
                 <!-- Right: Enhancement Filters & Print Layout Settings (5 Cols) -->
                 <div class="lg:col-span-5 p-5 bg-slate-50 flex flex-col justify-between space-y-4 border-l border-slate-200">
                     
-                    <div class="space-y-4">
-                        <!-- Fine Straightening Slider -->
-                        <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
-                            <div class="flex justify-between text-xs font-bold text-slate-700 mb-1">
-                                <span>📐 तिरछी फोटो सीधी करें (Fine Tilt)</span>
-                                <span id="tilt-val-label" class="text-blue-600 font-mono">0°</span>
+                    <div class="space-y-3.5">
+                        <!-- Helper Banner for 4-Point Perspective -->
+                        <div id="persp-tip-banner" class="bg-cyan-950 text-cyan-100 p-3 rounded-xl border border-cyan-700 text-xs flex items-start gap-2.5">
+                            <i class="fa-solid fa-circle-info text-cyan-400 text-base mt-0.5"></i>
+                            <div>
+                                <strong class="text-white block">4-Point Perspective कैसे काम करता है?</strong>
+                                फोटो के चारों नीले कोनों (Corners) को पकड़कर आधार कार्ड या कागज के चारों कोनों पर रखें और <strong>"Apply Perspective Straighten"</strong> दबाएं। तिरछा डॉक्यूमेंट एकदम सीधा हो जाएगा!
                             </div>
-                            <input type="range" id="studio-tilt-slider" min="-15" max="15" step="0.5" value="0" oninput="applyFineTilt(this.value)" class="w-full accent-blue-600 cursor-pointer">
                         </div>
 
-                        <!-- Document Scan / Filter Controls -->
-                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                        <!-- Document Scan / Filter Mode Selector -->
+                        <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-3">
                             <div class="flex items-center justify-between">
-                                <div>
-                                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700">✨ Document Cleaner (फोटो साफ करें)</h4>
-                                    <p class="text-[11px] text-slate-500">काली या धुंधली मोबाइल फोटो को सफेद कागज जैसा बनाएं</p>
-                                </div>
-                                <label class="inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" id="studio-bw-toggle" onchange="updateFilteredPreview()" class="sr-only peer">
-                                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all relative peer-checked:bg-blue-600"></div>
-                                </label>
+                                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700">✨ Document Cleaner Mode (फोटो साफ करें)</h4>
+                                <select id="studio-filter-mode" onchange="updateFilteredPreview()" class="bg-slate-100 border border-slate-300 text-slate-800 text-xs font-bold rounded-lg px-2.5 py-1 focus:outline-none">
+                                    <option value="color">🎨 Original / Magic Color</option>
+                                    <option value="grayscale">⚫ Clean Grayscale (B&W)</option>
+                                    <option value="bw-scan">📄 Crisp Xerox Scan (High Contrast)</option>
+                                </select>
                             </div>
 
                             <!-- Brightness & Contrast Sliders -->
@@ -479,7 +692,7 @@
                         </div>
 
                         <!-- Print Layout Selection on A4 Sheet -->
-                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                        <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
                             <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
                                 📄 A4 कागज पर प्रिंट साइज चुनें (Print Layout)
                             </label>
@@ -503,7 +716,7 @@
                                     </div>
                                 </label>
                                 <label class="cursor-pointer">
-                                    <input type="radio" name="studio-print-layout" value="passport-4" class="peer hidden" onchange="updateFilteredPreview()">
+                                    <input type="radio" name="studio-print-layout" value="passport-6" class="peer hidden" onchange="updateFilteredPreview()">
                                     <div class="border border-slate-200 peer-checked:border-blue-600 peer-checked:bg-blue-50/80 rounded-lg p-2 text-xs font-semibold text-slate-700 peer-checked:text-blue-800">
                                         🖼️ 6 Passport Photos Row
                                     </div>
@@ -513,22 +726,22 @@
 
                         <!-- Live Filtered Mini Preview -->
                         <div class="bg-white p-3 rounded-xl border border-slate-200 flex items-center gap-3">
-                            <div class="w-20 h-24 bg-slate-100 border border-slate-300 rounded-lg flex items-center justify-center overflow-hidden shrink-0">
+                            <div class="w-24 h-24 bg-slate-100 border border-slate-300 rounded-lg flex items-center justify-center overflow-hidden shrink-0">
                                 <canvas id="studio-preview-canvas" class="max-w-full max-h-full"></canvas>
                             </div>
                             <div class="text-xs text-slate-600 space-y-1">
                                 <div class="font-bold text-slate-800">Live Print Output Preview</div>
-                                <p>क्रॉप करने के बाद <strong class="text-green-700">"Final Print Now"</strong> दबाएं, यह सीधे आपके प्रिंटर से चुने गए A4 साइज में निकलेगा।</p>
+                                <p>सीधा करने के बाद <strong class="text-green-700">"Final Print Now"</strong> दबाएं, यह सीधे आपके प्रिंटर से चुने गए साइज में निकलेगा।</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Final Print & Download Buttons -->
                     <div class="pt-2 flex gap-2.5">
-                        <button onclick="downloadProcessedStudioImage()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold py-3 px-4 rounded-xl text-xs sm:text-sm transition flex items-center justify-center gap-1.5">
+                        <button type="button" onclick="downloadProcessedStudioImage()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold py-3 px-4 rounded-xl text-xs sm:text-sm transition flex items-center justify-center gap-1.5">
                             <i class="fa-solid fa-download"></i> Save Image
                         </button>
-                        <button onclick="executeStudioPrint()" class="flex-grow bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-5 rounded-xl text-sm sm:text-base shadow-md transition flex items-center justify-center gap-2">
+                        <button type="button" onclick="executeStudioPrint()" class="flex-grow bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-5 rounded-xl text-sm sm:text-base shadow-md transition flex items-center justify-center gap-2">
                             <i class="fa-solid fa-print"></i> 🖨️ Final Print Now
                         </button>
                     </div>
@@ -544,7 +757,7 @@
     <!-- ================= APPLICATION JAVASCRIPT ================= -->
     <script>
         // =========================================================================
-        // GLOBAL STATE & INITIALIZATION
+        // GLOBAL STATE, CHUNKED TRANSFER & 10-MINUTE AUTO-DELETE CONFIGURATION
         // =========================================================================
         const urlParams = new URLSearchParams(window.location.search);
         const urlShopParam = urlParams.get('shop');
@@ -555,11 +768,44 @@
         let cropperInstance = null;
         let activeStudioJob = null;
 
+        // Default Auto-Delete Duration: 10 Minutes (in milliseconds)
+        let autoDeleteDurationMinutes = 10;
+
+        // Customer staging queue (supports multiple camera snaps + PDFs before hitting Send)
+        let stagedCustomerFiles = [];
+
+        // Live WebRTC Camera stream state
+        let liveCameraStream = null;
+        let currentCameraFacing = 'environment';
+
+        // 64KB Chunk size for rock-solid WebRTC DataChannel transfers (prevents 3MB-15MB+ drops)
+        const CHUNK_SIZE_BYTES = 64 * 1024;
+        const incomingTransfers = {};
+
+        // 4-Point Perspective Crop State
+        let currentStudioCropMode = 'perspective'; // 'perspective' | 'rectangle'
+        let perspOriginalImageUrl = '';
+        let perspWorkingImageUrl = '';
+        let perspPoints = [
+            { x: 0.12, y: 0.14 }, // TL (normalized 0..1)
+            { x: 0.88, y: 0.10 }, // TR
+            { x: 0.92, y: 0.88 }, // BR
+            { x: 0.08, y: 0.84 }  // BL
+        ];
+        let activeDragCornerIdx = null;
+        let perspWarpedCanvas = null;
+
         window.addEventListener('DOMContentLoaded', () => {
             document.getElementById('shop-id-input').value = currentShopId;
 
             // Initialize Admin Peer & QR Code
             initAdminDashboard();
+
+            // Initialize 4-Point Perspective Drag Listeners
+            initPerspectiveDragHandlers();
+
+            // Start 1-Second Interval for 10-Minute Auto-Delete Countdown Timers
+            setInterval(tickAutoDeleteCountdowns, 1000);
 
             // Automatically switch to Customer View if ?shop=... is present in URL
             if (urlShopParam) {
@@ -581,7 +827,8 @@
             const colorMap = {
                 success: 'bg-emerald-600 text-white border-emerald-700',
                 error: 'bg-red-600 text-white border-red-700',
-                info: 'bg-slate-900 text-white border-slate-700'
+                info: 'bg-slate-900 text-white border-slate-700',
+                warning: 'bg-amber-600 text-white border-amber-700'
             };
 
             toast.className = `pointer-events-auto flex items-center justify-between gap-3 px-4 py-3 rounded-xl shadow-lg border text-xs sm:text-sm font-medium job-card-anim ${colorMap[type] || colorMap.info}`;
@@ -593,7 +840,21 @@
 
             setTimeout(() => {
                 if (toast && toast.parentElement) toast.remove();
-            }, 4000);
+            }, 4500);
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes >= 1024 * 1024) {
+                return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+            }
+            return Math.max(1, (bytes / 1024).toFixed(1)) + ' KB';
+        }
+
+        function formatCountdownTime(msRemaining) {
+            const totalSeconds = Math.max(0, Math.floor(msRemaining / 1000));
+            const mins = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+            const secs = String(totalSeconds % 60).padStart(2, '0');
+            return `${mins}:${secs}`;
         }
 
         // Crisp 2-Tone Cyber Cafe Bell Sound using Web Audio API
@@ -603,7 +864,6 @@
                 const ctx = new AudioCtx();
                 const now = ctx.currentTime;
 
-                // First tone
                 const osc1 = ctx.createOscillator();
                 const gain1 = ctx.createGain();
                 osc1.type = 'sine';
@@ -623,7 +883,6 @@
             }
         }
 
-        // Switch between Shop Admin and Customer Mobile Mode
         function switchViewMode(mode) {
             const adminSec = document.getElementById('admin-section');
             const custSec = document.getElementById('customer-section');
@@ -645,7 +904,67 @@
         }
 
         // =========================================================================
-        // ADMIN DASHBOARD: PEERJS RECEIVER & QR GENERATOR
+        // 10-MINUTE AUTO-DELETE TIMER & MEMORY CLEANUP ENGINE
+        // =========================================================================
+        function updateGlobalAutoDeleteSetting() {
+            const selectEl = document.getElementById('auto-delete-minutes-select');
+            autoDeleteDurationMinutes = parseInt(selectEl.value, 10) || 10;
+            showToast(`⏱️ नए डॉक्यूमेंट अब ${autoDeleteDurationMinutes} मिनट बाद ऑटो-डिलीट होंगे।`, 'info');
+        }
+
+        function extendJobExpiry(jobId, extraMinutes = 5) {
+            const job = printJobs.find(j => j.id === jobId);
+            if (!job) return;
+            job.expiresAt += extraMinutes * 60 * 1000;
+            tickAutoDeleteCountdowns();
+            showToast(`⏱️ "${job.customerName}" की फाइल का समय +${extraMinutes} मिनट बढ़ा दिया गया।`, 'success');
+        }
+
+        function tickAutoDeleteCountdowns() {
+            if (printJobs.length === 0) return;
+
+            const now = Date.now();
+            const expiredJobs = [];
+
+            printJobs.forEach((job) => {
+                const remainingMs = job.expiresAt - now;
+                if (remainingMs <= 0) {
+                    expiredJobs.push(job);
+                } else {
+                    // Update badge text & color in DOM without re-rendering full list
+                    const badgeEl = document.getElementById(`timer-badge-${job.id}`);
+                    if (badgeEl) {
+                        badgeEl.innerHTML = `<i class="fa-regular fa-hourglass-half mr-1"></i> Auto-deletes in ${formatCountdownTime(remainingMs)}`;
+                        if (remainingMs < 120 * 1000) {
+                            // Under 2 minutes: Urgent Red/Amber pulse
+                            badgeEl.className = 'text-[11px] font-mono font-bold bg-red-100 text-red-700 border border-red-300 px-2.5 py-0.5 rounded-full animate-pulse';
+                        } else {
+                            badgeEl.className = 'text-[11px] font-mono font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-0.5 rounded-full';
+                        }
+                    }
+                }
+            });
+
+            if (expiredJobs.length > 0) {
+                expiredJobs.forEach((expJob) => {
+                    // Revoke Blob URL from RAM for privacy and memory cleanup
+                    if (expJob.fileUrl && expJob.fileUrl.startsWith('blob:')) {
+                        try { URL.revokeObjectURL(expJob.fileUrl); } catch (e) {}
+                    }
+                    if (activeStudioJob && activeStudioJob.id === expJob.id) {
+                        closeStudioModal();
+                    }
+                    showToast(`🗑️ Document from "${expJob.customerName}" auto-deleted after ${autoDeleteDurationMinutes} mins`, 'warning');
+                });
+
+                const expiredIds = new Set(expiredJobs.map(j => j.id));
+                printJobs = printJobs.filter(j => !expiredIds.has(j.id));
+                renderPrintQueue();
+            }
+        }
+
+        // =========================================================================
+        // ADMIN DASHBOARD: PEERJS RECEIVER & 64KB CHUNKED ASSEMBLER ENGINE
         // =========================================================================
         function getCustomerShareUrl() {
             const baseUrl = window.location.origin + window.location.pathname;
@@ -693,15 +1012,15 @@
                 });
 
                 adminPeer.on('connection', (conn) => {
-                    conn.on('data', (payload) => {
-                        handleIncomingPrintJob(payload);
+                    conn.on('data', (packet) => {
+                        processIncomingPeerPacket(packet, conn);
                     });
                 });
 
                 adminPeer.on('error', (err) => {
                     if (err.type === 'unavailable-id') {
-                        statusDot.className = 'w-3 h-3 rounded-full bg-amber-500 inline-block';
-                        statusText.innerText = 'ID Active in Another Tab (Ready)';
+                        statusDot.className = 'w-3 h-3 rounded-full bg-emerald-500 inline-block';
+                        statusText.innerText = 'Active in Browser (Ready)';
                     } else {
                         statusDot.className = 'w-3 h-3 rounded-full bg-red-500 inline-block';
                         statusText.innerText = 'Connection Notice: ' + err.type;
@@ -710,6 +1029,105 @@
             } catch (e) {
                 statusText.innerText = 'Offline / Local Mode';
             }
+        }
+
+        // Supports both { type: 'start'|'chunk'|'end', jobId } and { type: 'FILE_START'|'FILE_CHUNK'|'FILE_END', fileId }
+        function processIncomingPeerPacket(packet, conn) {
+            if (!packet) return;
+
+            const pType = packet.type;
+            const transferId = packet.jobId || packet.fileId;
+
+            if (pType === 'start' || pType === 'FILE_START') {
+                const metaInfo = packet.metadata || packet;
+                incomingTransfers[transferId] = {
+                    meta: metaInfo,
+                    totalChunks: packet.totalChunks || metaInfo.totalChunks || 1,
+                    chunks: new Array(packet.totalChunks || metaInfo.totalChunks || 1),
+                    receivedChunks: 0,
+                    receivedBytes: 0
+                };
+                renderAdminIncomingProgress(transferId);
+            } 
+            else if (pType === 'chunk' || pType === 'FILE_CHUNK') {
+                const transfer = incomingTransfers[transferId];
+                if (!transfer) return;
+
+                const idx = packet.index !== undefined ? packet.index : packet.chunkIndex;
+                const rawData = packet.data || packet.chunkData;
+                const byteLen = packet.chunkByteLength || (rawData && rawData.byteLength) || CHUNK_SIZE_BYTES;
+
+                transfer.chunks[idx] = rawData;
+                transfer.receivedChunks++;
+                transfer.receivedBytes = Math.min(transfer.meta.fileSize || Infinity, transfer.receivedBytes + byteLen);
+                renderAdminIncomingProgress(transferId);
+            } 
+            else if (pType === 'end' || pType === 'FILE_END') {
+                const transfer = incomingTransfers[transferId];
+                if (!transfer) return;
+
+                const completeBlob = new Blob(transfer.chunks, { type: transfer.meta.fileType || 'application/octet-stream' });
+                const blobUrl = URL.createObjectURL(completeBlob);
+
+                removeAdminIncomingProgress(transferId);
+                delete incomingTransfers[transferId];
+
+                handleIncomingPrintJob({
+                    customerName: transfer.meta.customerName,
+                    fileName: transfer.meta.fileName,
+                    fileType: transfer.meta.fileType,
+                    fileSize: transfer.meta.fileSize || completeBlob.size,
+                    colorMode: transfer.meta.colorMode,
+                    copies: transfer.meta.copies,
+                    layoutType: transfer.meta.layoutType,
+                    blobUrl: blobUrl
+                });
+
+                if (conn && conn.open) {
+                    conn.send({ type: 'ack', jobId: transferId });
+                }
+            } 
+            else if (packet.fileName) {
+                handleIncomingPrintJob(packet);
+            }
+        }
+
+        function renderAdminIncomingProgress(transferId) {
+            const transfer = incomingTransfers[transferId];
+            if (!transfer) return;
+
+            const container = document.getElementById('admin-incoming-progress-list');
+            let card = document.getElementById(`incoming-prog-${transferId}`);
+            const pct = Math.min(100, Math.round((transfer.receivedChunks / Math.max(1, transfer.totalChunks)) * 100));
+
+            if (!card) {
+                card = document.createElement('div');
+                card.id = `incoming-prog-${transferId}`;
+                card.className = 'bg-blue-950 text-white rounded-xl p-3.5 border border-blue-700 shadow-sm';
+                container.prepend(card);
+            }
+
+            card.innerHTML = `
+                <div class="flex items-center justify-between text-xs font-semibold mb-1.5">
+                    <span class="truncate pr-2">
+                        <i class="fa-solid fa-spinner fa-spin text-amber-400 mr-1.5"></i>
+                        Receiving: <strong>${escapeHtml(transfer.meta.customerName || 'Customer')}</strong> — ${escapeHtml(transfer.meta.fileName || 'Document')}
+                    </span>
+                    <span class="font-mono text-emerald-400 font-bold">${pct}%</span>
+                </div>
+                <div class="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-blue-500 to-emerald-400 transition-all duration-100" style="width: ${pct}%"></div>
+                </div>
+                <div class="flex justify-between text-[11px] text-slate-400 font-mono mt-1">
+                    <span>${formatFileSize(transfer.receivedBytes)} / ${formatFileSize(transfer.meta.fileSize || 0)}</span>
+                    <span>Chunk ${transfer.receivedChunks}/${transfer.totalChunks}</span>
+                </div>
+            `;
+        }
+
+        function removeAdminIncomingProgress(transferId) {
+            const card = document.getElementById(`incoming-prog-${transferId}`);
+            if (card) card.remove();
         }
 
         function reconnectAdminPeer() {
@@ -742,7 +1160,6 @@
             showToast('📋 कस्टमर अपलोड लिंक कॉपी हो गया!', 'success');
         }
 
-        // Print a clean Shop QR Standee for the Cyber Cafe Desk
         function printQrStandee() {
             const qrCanvas = document.querySelector('#qrcode-box canvas');
             const qrImg = document.querySelector('#qrcode-box img');
@@ -760,7 +1177,7 @@
                         🖨️ INSTANT SCAN & PRINT
                     </div>
                     <h1 style="font-size: 32px; margin: 18px 0 8px 0; color: #0f172a;">डॉक्यूमेंट प्रिंट के लिए यहाँ स्कैन करें</h1>
-                    <p style="font-size: 16px; color: #475569; margin-bottom: 24px;">WhatsApp या ईमेल की जरूरत नहीं • सीधे अपने फोन से फाइल भेजें</p>
+                    <p style="font-size: 16px; color: #475569; margin-bottom: 24px;">कैमरे से फोटो खींचें या बड़ी PDF फाइल सीधे कंप्यूटर पर भेजें</p>
                     <div style="display: inline-block; padding: 18px; border: 3px dashed #2563eb; border-radius: 20px; background: #fff;">
                         <img src="${qrSrc}" style="width: 240px; height: 240px; display: block;" />
                     </div>
@@ -768,7 +1185,7 @@
                     <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #cbd5e1; display: flex; justify-content: space-around; font-size: 14px; font-weight: bold; color: #1e293b;">
                         <span>1. QR स्कैन करें</span>
                         <span>•</span>
-                        <span>2. फोटो/PDF चुनें</span>
+                        <span>2. फोटो खींचें / PDF चुनें</span>
                         <span>•</span>
                         <span>3. तुरंत प्रिंट पाएं</span>
                     </div>
@@ -778,33 +1195,38 @@
         }
 
         // =========================================================================
-        // INCOMING JOB HANDLER & QUEUE RENDERING
+        // INCOMING JOB HANDLER & QUEUE RENDERING (WITH 10-MINUTE EXPIRY COUNTDOWN)
         // =========================================================================
         function handleIncomingPrintJob(data) {
             playNotificationChime();
 
-            let fileUrl = data.dataUrl || '';
+            let fileUrl = data.blobUrl || data.dataUrl || '';
             if (!fileUrl && data.fileBuffer) {
                 const blob = new Blob([data.fileBuffer], { type: data.fileType });
                 fileUrl = URL.createObjectURL(blob);
             }
 
+            const now = Date.now();
+            const expiresAt = now + (autoDeleteDurationMinutes * 60 * 1000);
+
             const newJob = {
-                id: 'job-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+                id: 'job-' + now + '-' + Math.floor(Math.random() * 1000),
                 customerName: data.customerName || 'ग्राहक (Customer)',
                 fileName: data.fileName || 'Document.jpg',
-                fileType: data.fileType || 'image/jpeg',
-                fileSizeKB: data.fileSize ? (data.fileSize / 1024).toFixed(1) : '145.0',
+                fileType: data.fileType || (data.fileName && data.fileName.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg'),
+                fileSizeFormatted: data.fileSize ? formatFileSize(data.fileSize) : '240 KB',
                 colorMode: data.colorMode || 'B&W',
                 copies: data.copies || 1,
                 layoutType: data.layoutType || 'Full A4 Page',
                 timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+                createdAt: now,
+                expiresAt: expiresAt,
                 fileUrl: fileUrl
             };
 
             printJobs.unshift(newJob);
             renderPrintQueue();
-            showToast(`🔔 नया डॉक्यूमेंट आया: ${newJob.customerName} (${newJob.fileName})`, 'success');
+            showToast(`🔔 नया डॉक्यूमेंट आया: ${newJob.customerName} (${newJob.fileSizeFormatted})`, 'success');
         }
 
         function renderPrintQueue() {
@@ -824,8 +1246,11 @@
             listEl.classList.remove('hidden');
             listEl.innerHTML = '';
 
+            const now = Date.now();
+
             printJobs.forEach((job) => {
                 const isImage = job.fileType.startsWith('image/');
+                const remainingMs = Math.max(0, job.expiresAt - now);
                 const colorBadgeClass = job.colorMode === 'Color'
                     ? 'bg-pink-100 text-pink-800 border-pink-300'
                     : 'bg-slate-800 text-white border-slate-900';
@@ -838,16 +1263,16 @@
                         <!-- Thumbnail or PDF Icon -->
                         <div class="w-16 h-16 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
                             ${isImage 
-                                ? `<img src="${job.fileUrl}" class="w-full h-full object-cover cursor-pointer" onclick="openStudioModal('${job.id}')" title="Click to Crop & Edit" />`
+                                ? `<img src="${job.fileUrl}" class="w-full h-full object-cover cursor-pointer" onclick="openStudioModal('${job.id}')" title="Click for 4-Point Perspective Crop" />`
                                 : `<i class="fa-solid fa-file-pdf text-3xl text-red-600"></i>`
                             }
                         </div>
 
                         <div class="min-w-0">
-                            <div class="flex flex-wrap items-center gap-2">
-                                <span class="font-bold text-slate-900 text-base">${escapeHtml(job.customerName)}</span>
+                            <div class="flex flex-wrap items-center gap-1.5">
+                                <span class="font-bold text-slate-900 text-base mr-1">${escapeHtml(job.customerName)}</span>
                                 <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${colorBadgeClass}">
-                                    ${job.colorMode === 'Color' ? '🎨 Color (रंगीन)' : '⚫ B&W (सादा)'}
+                                    ${job.colorMode === 'Color' ? '🎨 Color' : '⚫ B&W'}
                                 </span>
                                 <span class="text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-0.5 rounded-full">
                                     ${job.copies} ${job.copies > 1 ? 'Copies' : 'Copy'}
@@ -858,9 +1283,19 @@
                             </div>
 
                             <p class="text-xs text-slate-600 font-medium truncate mt-1">
-                                <i class="fa-regular fa-file mr-1"></i> ${escapeHtml(job.fileName)} (${job.fileSizeKB} KB)
+                                <i class="fa-regular fa-file mr-1"></i> ${escapeHtml(job.fileName)} <strong class="text-blue-700">(${job.fileSizeFormatted})</strong>
                                 <span class="text-slate-400 ml-2"><i class="fa-regular fa-clock mr-0.5"></i> ${job.timestamp}</span>
                             </p>
+
+                            <!-- Live 10-Minute Auto-Delete Countdown Badge & +5 Min Extend Button -->
+                            <div class="flex flex-wrap items-center gap-2 mt-2">
+                                <span id="timer-badge-${job.id}" class="text-[11px] font-mono font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                                    <i class="fa-regular fa-hourglass-half mr-1"></i> Auto-deletes in ${formatCountdownTime(remainingMs)}
+                                </span>
+                                <button onclick="extendJobExpiry('${job.id}', 5)" class="text-[11px] font-bold bg-slate-100 hover:bg-blue-100 text-slate-700 hover:text-blue-800 px-2 py-0.5 rounded-md border border-slate-300 transition" title="Extend Auto-Delete Timer by 5 Minutes">
+                                    +5 Min
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -868,7 +1303,7 @@
                     <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end shrink-0 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100">
                         ${isImage ? `
                         <button onclick="openStudioModal('${job.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl transition flex items-center gap-1.5 shadow-sm">
-                            <i class="fa-solid fa-crop-simple"></i> ✂️ Edit / Crop & Print
+                            <i class="fa-solid fa-vector-square"></i> 📐 Perspective / Crop
                         </button>
                         ` : ''}
                         <button onclick="directPrintJob('${job.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl transition flex items-center gap-1.5 shadow-sm">
@@ -877,8 +1312,8 @@
                         <a href="${job.fileUrl}" download="${escapeHtml(job.fileName)}" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-2.5 rounded-xl transition flex items-center gap-1" title="Download File">
                             <i class="fa-solid fa-download"></i>
                         </a>
-                        <button onclick="removeJob('${job.id}')" class="bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold px-3 py-2.5 rounded-xl transition" title="Remove">
-                            <i class="fa-solid fa-xmark"></i>
+                        <button onclick="removeJob('${job.id}')" class="bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold px-3 py-2.5 rounded-xl transition" title="Delete Now">
+                            <i class="fa-solid fa-trash-can"></i>
                         </button>
                     </div>
                 `;
@@ -887,17 +1322,25 @@
         }
 
         function removeJob(jobId) {
+            const job = printJobs.find(j => j.id === jobId);
+            if (job && job.fileUrl && job.fileUrl.startsWith('blob:')) {
+                try { URL.revokeObjectURL(job.fileUrl); } catch (e) {}
+            }
             printJobs = printJobs.filter(j => j.id !== jobId);
             renderPrintQueue();
         }
 
         function clearAllJobs() {
+            printJobs.forEach(job => {
+                if (job.fileUrl && job.fileUrl.startsWith('blob:')) {
+                    try { URL.revokeObjectURL(job.fileUrl); } catch (e) {}
+                }
+            });
             printJobs = [];
             renderPrintQueue();
-            showToast('🗑️ सभी प्रिंट जॉब्स साफ कर दिए गए।', 'info');
+            showToast('🗑️ सभी प्रिंट जॉब्स मेमोरी से साफ कर दिए गए।', 'info');
         }
 
-        // Direct Print without opening studio
         function directPrintJob(jobId) {
             const job = printJobs.find(j => j.id === jobId);
             if (!job) return;
@@ -919,109 +1362,13 @@
                 `;
                 window.print();
             } else {
-                // For PDF files, open in new tab for native browser PDF printing
                 const pdfWin = window.open(job.fileUrl, '_blank');
                 if (pdfWin) pdfWin.focus();
             }
         }
 
         // =========================================================================
-        // SAMPLE TEST GENERATOR & LOCAL FILE LOADER (FOR INSTANT SHOPKEEPER DEMO)
-        // =========================================================================
-        function triggerSampleIncomingJob() {
-            // Create a synthetic tilted sample ID Card / Document image on canvas
-            const canvas = document.createElement('canvas');
-            canvas.width = 900;
-            canvas.height = 600;
-            const ctx = canvas.getContext('2d');
-
-            // Slightly dull phone photo background
-            ctx.fillStyle = '#cbd5e1';
-            ctx.fillRect(0, 0, 900, 600);
-
-            // Tilted document card inside photo
-            ctx.save();
-            ctx.translate(450, 300);
-            ctx.rotate((-4 * Math.PI) / 180);
-
-            // Card base
-            ctx.fillStyle = '#f8fafc';
-            ctx.fillRect(-330, -210, 660, 420);
-            ctx.strokeStyle = '#334155';
-            ctx.lineWidth = 4;
-            ctx.strokeRect(-330, -210, 660, 420);
-
-            // Header bar (Saffron / Green Indian ID style)
-            ctx.fillStyle = '#ea580c';
-            ctx.fillRect(-330, -210, 660, 52);
-            ctx.fillStyle = '#16a34a';
-            ctx.fillRect(-330, -158, 660, 14);
-
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 24px sans-serif';
-            ctx.fillText('भारत सरकार • GOVERNMENT OF INDIA', -230, -175);
-
-            // Photo placeholder box
-            ctx.fillStyle = '#e2e8f0';
-            ctx.fillRect(-290, -110, 140, 170);
-            ctx.strokeStyle = '#64748b';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(-290, -110, 140, 170);
-            ctx.fillStyle = '#475569';
-            ctx.font = 'bold 16px sans-serif';
-            ctx.fillText('USER PHOTO', -272, -20);
-
-            // Details text
-            ctx.fillStyle = '#0f172a';
-            ctx.font = 'bold 24px sans-serif';
-            ctx.fillText('नाम / Name: राजेश कुमार शर्मा', -120, -75);
-            ctx.font = '20px sans-serif';
-            ctx.fillText('जन्म तिथि / DOB: 15/08/1996', -120, -30);
-            ctx.fillText('पता: एम.जी. रोड, जयपुर (राजस्थान)', -120, 15);
-
-            // Sample ID Number
-            ctx.font = 'bold 34px monospace';
-            ctx.fillStyle = '#1e293b';
-            ctx.fillText('4829  7104  9382', -155, 135);
-
-            ctx.restore();
-
-            const sampleDataUrl = canvas.toDataURL('image/jpeg', 0.92);
-
-            handleIncomingPrintJob({
-                customerName: 'राजेश शर्मा (Demo Customer)',
-                fileName: 'Aadhaar_Card_Photo.jpg',
-                fileType: 'image/jpeg',
-                fileSize: 184320,
-                colorMode: 'B&W',
-                copies: 1,
-                layoutType: 'ID Card / Aadhaar Size',
-                dataUrl: sampleDataUrl
-            });
-        }
-
-        function loadLocalFileIntoQueue(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                handleIncomingPrintJob({
-                    customerName: 'Direct Counter File',
-                    fileName: file.name,
-                    fileType: file.type || 'image/jpeg',
-                    fileSize: file.size,
-                    colorMode: 'Color',
-                    copies: 1,
-                    layoutType: 'Full A4 Page',
-                    dataUrl: e.target.result
-                });
-            };
-            reader.readAsDataURL(file);
-            event.target.value = '';
-        }
-
-        // =========================================================================
-        // CUSTOMER MOBILE UPLOAD LOGIC
+        // CUSTOMER CAMERA CAPTURE, IMAGE AUTO-OPTIMIZER & CHUNKED SENDER
         // =========================================================================
         function adjustCopies(delta) {
             const input = document.getElementById('cust-copies-input');
@@ -1030,32 +1377,220 @@
             input.value = val;
         }
 
-        function updateSelectedFilesPreview() {
-            const fileInput = document.getElementById('cust-file-input');
+        // Smart Canvas Compressor for 8MB-12MB Mobile Camera Photos (Preserves 2400px HD Document Clarity)
+        async function optimizeCameraImageIfNeeded(file, source) {
+            const autoOptimize = document.getElementById('auto-optimize-toggle').checked;
+            const isImage = file.type.startsWith('image/') || /\.(jpg|jpeg|png|webp)$/i.test(file.name);
+
+            // Never touch PDFs; only optimize images if toggle is ON and (came from camera or > 1.5MB)
+            if (!isImage || !autoOptimize || (source !== 'camera' && file.size < 1.5 * 1024 * 1024)) {
+                return file;
+            }
+
+            return new Promise((resolve) => {
+                const img = new Image();
+                const objectUrl = URL.createObjectURL(file);
+
+                img.onload = () => {
+                    URL.revokeObjectURL(objectUrl);
+                    const MAX_DIMENSION = 2400; // Crisp 2400px resolution for small Aadhaar/ID text
+                    let { width, height } = img;
+
+                    if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+                        if (width > height) {
+                            height = Math.round((height * MAX_DIMENSION) / width);
+                            width = MAX_DIMENSION;
+                        } else {
+                            width = Math.round((width * MAX_DIMENSION) / height);
+                            height = MAX_DIMENSION;
+                        }
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, width, height);
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    canvas.toBlob((blob) => {
+                        if (!blob) {
+                            resolve(file);
+                            return;
+                        }
+                        const cleanName = file.name ? file.name.replace(/\.[^.]+$/, '.jpg') : `Camera_Photo_${Date.now()}.jpg`;
+                        const optimizedFile = new File([blob], cleanName, {
+                            type: 'image/jpeg',
+                            lastModified: Date.now()
+                        });
+                        optimizedFile.originalSize = file.size;
+                        resolve(optimizedFile);
+                    }, 'image/jpeg', 0.86);
+                };
+
+                img.onerror = () => {
+                    URL.revokeObjectURL(objectUrl);
+                    resolve(file);
+                };
+
+                img.src = objectUrl;
+            });
+        }
+
+        async function handleCustomerFileInput(inputEl, source) {
+            if (!inputEl.files || !inputEl.files.length) return;
+
+            const rawFiles = Array.from(inputEl.files);
+            showToast(`⏳ ${rawFiles.length} फाइल प्रोसेस हो रही है...`, 'info');
+
+            for (const rawFile of rawFiles) {
+                const processedFile = await optimizeCameraImageIfNeeded(rawFile, source);
+                const previewUrl = URL.createObjectURL(processedFile);
+                stagedCustomerFiles.push({
+                    id: 'stage-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+                    file: processedFile,
+                    previewUrl: previewUrl,
+                    source: source,
+                    originalSize: rawFile.size
+                });
+            }
+
+            // Reset input value so user can capture another camera photo immediately
+            inputEl.value = '';
+            renderStagedCustomerFiles();
+            showToast('✅ डॉक्यूमेंट जुड़ गया! अब नीचे "Send for Print" दबाएं।', 'success');
+        }
+
+        function renderStagedCustomerFiles() {
             const previewBox = document.getElementById('cust-selected-files');
             previewBox.innerHTML = '';
 
-            if (!fileInput.files.length) {
+            if (stagedCustomerFiles.length === 0) {
                 previewBox.classList.add('hidden');
                 return;
             }
 
             previewBox.classList.remove('hidden');
-            Array.from(fileInput.files).forEach((f) => {
+            stagedCustomerFiles.forEach((item) => {
+                const f = item.file;
+                const isImg = f.type.startsWith('image/');
+                const wasCompressed = item.originalSize && item.originalSize > f.size + 50000;
+                const sizeText = wasCompressed
+                    ? `<span class="line-through text-slate-400 mr-1">${formatFileSize(item.originalSize)}</span> <strong class="text-emerald-700">${formatFileSize(f.size)} (HD Optimized)</strong>`
+                    : `<strong class="text-slate-700">${formatFileSize(f.size)}</strong>`;
+
                 const row = document.createElement('div');
-                row.className = 'flex items-center justify-between bg-blue-50/80 border border-blue-200 px-3 py-2 rounded-xl text-xs font-medium text-slate-700';
+                row.className = 'flex items-center justify-between bg-slate-50 border-2 border-blue-200 p-2.5 rounded-2xl text-xs font-medium text-slate-800 shadow-sm';
                 row.innerHTML = `
-                    <span class="truncate pr-2"><i class="fa-solid fa-file-circle-check text-blue-600 mr-1.5"></i>${escapeHtml(f.name)}</span>
-                    <span class="text-slate-500 shrink-0">${(f.size / 1024).toFixed(1)} KB</span>
+                    <div class="flex items-center gap-3 min-w-0 pr-2">
+                        <div class="w-12 h-12 rounded-xl bg-white border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
+                            ${isImg
+                                ? `<img src="${item.previewUrl}" class="w-full h-full object-cover" />`
+                                : `<i class="fa-solid fa-file-pdf text-2xl text-red-600"></i>`
+                            }
+                        </div>
+                        <div class="min-w-0">
+                            <p class="truncate font-bold text-slate-900">${escapeHtml(f.name)}</p>
+                            <p class="text-[11px] text-slate-500 mt-0.5">${sizeText}</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="removeStagedCustomerFile('${item.id}')" class="text-red-600 hover:bg-red-100 font-bold w-8 h-8 rounded-xl bg-red-50 flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
                 `;
                 previewBox.appendChild(row);
             });
         }
 
-        function sendFilesToShop() {
+        function removeStagedCustomerFile(stageId) {
+            const target = stagedCustomerFiles.find(item => item.id === stageId);
+            if (target && target.previewUrl) {
+                try { URL.revokeObjectURL(target.previewUrl); } catch (e) {}
+            }
+            stagedCustomerFiles = stagedCustomerFiles.filter(item => item.id !== stageId);
+            renderStagedCustomerFiles();
+        }
+
+        // =========================================================================
+        // LIVE IN-BROWSER WEBRTC CAMERA MODAL (FALLBACK FOR ANY ANDROID BROWSER)
+        // =========================================================================
+        async function openLiveCameraModal() {
+            const modal = document.getElementById('live-camera-modal');
+            const video = document.getElementById('live-camera-video');
+            modal.classList.remove('hidden');
+
+            try {
+                if (liveCameraStream) {
+                    liveCameraStream.getTracks().forEach(t => t.stop());
+                }
+                liveCameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: { ideal: currentCameraFacing },
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    },
+                    audio: false
+                });
+                video.srcObject = liveCameraStream;
+            } catch (err) {
+                showToast('⚠️ ब्राउज़र कैमरा अनुमति नहीं मिली। कृपया मुख्य कैमरे बटन का प्रयोग करें।', 'error');
+                closeLiveCameraModal();
+            }
+        }
+
+        function switchCameraFacingMode() {
+            currentCameraFacing = currentCameraFacing === 'environment' ? 'user' : 'environment';
+            openLiveCameraModal();
+        }
+
+        function closeLiveCameraModal() {
+            const modal = document.getElementById('live-camera-modal');
+            modal.classList.add('hidden');
+            if (liveCameraStream) {
+                liveCameraStream.getTracks().forEach(t => t.stop());
+                liveCameraStream = null;
+            }
+        }
+
+        async function captureLiveCameraFrame() {
+            const video = document.getElementById('live-camera-video');
+            if (!video.videoWidth) {
+                showToast('कैमरा तैयार हो रहा है, 1 सेकंड रुकें...', 'info');
+                return;
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            canvas.toBlob(async (blob) => {
+                if (!blob) return;
+                const snapFile = new File([blob], `Camera_Scan_${Date.now()}.jpg`, { type: 'image/jpeg' });
+                const optimized = await optimizeCameraImageIfNeeded(snapFile, 'camera');
+                const previewUrl = URL.createObjectURL(optimized);
+                stagedCustomerFiles.push({
+                    id: 'stage-' + Date.now(),
+                    file: optimized,
+                    previewUrl: previewUrl,
+                    source: 'camera',
+                    originalSize: snapFile.size
+                });
+                renderStagedCustomerFiles();
+                closeLiveCameraModal();
+                showToast('📸 कैमरे से फोटो खींच ली गई! अब Send दबाएं।', 'success');
+            }, 'image/jpeg', 0.88);
+        }
+
+        // =========================================================================
+        // CHUNKED FILE TRANSFER SENDER (SUPPORTS 3MB-15MB+ FILES SMOOTHLY)
+        // =========================================================================
+        async function sendFilesToShop() {
             const nameInput = document.getElementById('cust-name-input');
-            const fileInput = document.getElementById('cust-file-input');
             const statusBox = document.getElementById('cust-transfer-status');
+            const progBox = document.getElementById('cust-progress-box');
             const sendBtn = document.getElementById('cust-send-btn');
 
             const customerName = nameInput.value.trim() || 'ग्राहक (Customer)';
@@ -1063,104 +1598,475 @@
             const copies = parseInt(document.getElementById('cust-copies-input').value, 10) || 1;
             const layoutType = document.getElementById('cust-layout-select').value;
 
-            if (!fileInput.files.length) {
-                showToast('⚠️ कृपया पहले कोई फोटो या PDF फाइल चुनें!', 'error');
+            if (stagedCustomerFiles.length === 0) {
+                showToast('⚠️ कृपया पहले कैमरे से फोटो खींचें या कोई PDF/फाइल चुनें!', 'error');
                 return;
             }
 
-            const files = Array.from(fileInput.files);
-            statusBox.classList.remove('hidden');
-            statusBox.className = 'rounded-xl p-3.5 text-center text-sm font-semibold bg-blue-50 text-blue-700 border border-blue-200';
-            statusBox.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> डॉक्यूमेंट दुकानदार के कंप्यूटर पर भेजा जा रहा है...`;
             sendBtn.disabled = true;
+            statusBox.classList.add('hidden');
+            progBox.classList.remove('hidden');
 
-            // Read files as DataURL so it works both Locally (same tab test) and over PeerJS
-            let processedCount = 0;
+            const filesToTransfer = [...stagedCustomerFiles];
 
-            files.forEach((file) => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const payload = {
+            // 1. Local same-tab testing mode
+            if (!urlShopParam) {
+                for (let i = 0; i < filesToTransfer.length; i++) {
+                    const f = filesToTransfer[i].file;
+                    await transferFileInChunksLocal(f, {
                         customerName,
-                        fileName: file.name,
-                        fileType: file.type || 'image/jpeg',
-                        fileSize: file.size,
                         colorMode,
                         copies,
                         layoutType,
-                        dataUrl: e.target.result
-                    };
+                        fileIndex: i + 1,
+                        totalFiles: filesToTransfer.length
+                    });
+                }
+                completeCustomerTransferUI(filesToTransfer.length);
+                return;
+            }
 
-                    // If testing on the same browser window, also push directly to Admin Queue
-                    if (!urlShopParam) {
-                        handleIncomingPrintJob(payload);
-                    }
+            // 2. Remote Customer Phone -> Shop Admin PC via PeerJS 64KB Chunked Protocol
+            try {
+                const tempPeer = new Peer();
+                tempPeer.on('open', () => {
+                    const conn = tempPeer.connect(currentShopId, { reliable: true });
 
-                    // Send over PeerJS to remote Shop PC
-                    try {
-                        const tempPeer = new Peer();
-                        tempPeer.on('open', () => {
-                            const conn = tempPeer.connect(currentShopId, { reliable: true });
-                            conn.on('open', () => {
-                                conn.send(payload);
-                                setTimeout(() => tempPeer.destroy(), 1500);
+                    conn.on('open', async () => {
+                        for (let i = 0; i < filesToTransfer.length; i++) {
+                            const f = filesToTransfer[i].file;
+                            await sendSingleFileOverPeerChunks(conn, f, {
+                                customerName,
+                                colorMode,
+                                copies,
+                                layoutType,
+                                fileIndex: i + 1,
+                                totalFiles: filesToTransfer.length
                             });
-                        });
-                    } catch (err) {
-                        console.warn('Peer transfer fallback used');
-                    }
+                        }
+                        completeCustomerTransferUI(filesToTransfer.length);
+                        setTimeout(() => tempPeer.destroy(), 3500);
+                    });
 
-                    processedCount++;
-                    if (processedCount === files.length) {
-                        statusBox.className = 'rounded-xl p-3.5 text-center text-sm font-semibold bg-emerald-50 text-emerald-800 border border-emerald-300';
-                        statusBox.innerHTML = `✅ आपकी ${files.length} फाइल सफलतापूर्वक प्रिंट के लिए भेज दी गई है!`;
-                        sendBtn.disabled = false;
-                        fileInput.value = '';
-                        document.getElementById('cust-selected-files').classList.add('hidden');
-                    }
-                };
-                reader.readAsDataURL(file);
+                    conn.on('error', () => {
+                        showCustomerTransferError('कनेक्शन एरर! कृपया दुकानदार की Shop ID चेक करें।');
+                    });
+                });
+
+                tempPeer.on('error', () => {
+                    showCustomerTransferError('नेटवर्क कनेक्शन एरर! कृपया दोबारा प्रयास करें।');
+                });
+            } catch (e) {
+                showCustomerTransferError('फाइल भेजने में समस्या आई।');
+            }
+        }
+
+        function updateCustomerProgressUI(fileName, sentBytes, totalBytes, chunkIndex, totalChunks) {
+            const pct = Math.min(100, Math.round((sentBytes / Math.max(1, totalBytes)) * 100));
+            document.getElementById('cust-progress-title').innerText = `Sending: ${fileName}`;
+            document.getElementById('cust-progress-percent').innerText = `${pct}%`;
+            document.getElementById('cust-progress-bar').style.width = `${pct}%`;
+            document.getElementById('cust-progress-bytes').innerText = `${formatFileSize(sentBytes)} / ${formatFileSize(totalBytes)}`;
+            document.getElementById('cust-progress-chunks').innerText = `Chunk ${chunkIndex}/${totalChunks}`;
+        }
+
+        // Sends a large file over PeerJS WebRTC DataChannel in 64KB slices: { type: 'start' }, { type: 'chunk' }, { type: 'end' }
+        async function sendSingleFileOverPeerChunks(conn, file, meta) {
+            const arrayBuffer = await file.arrayBuffer();
+            const totalBytes = arrayBuffer.byteLength;
+            const totalChunks = Math.max(1, Math.ceil(totalBytes / CHUNK_SIZE_BYTES));
+            const jobId = 'job-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
+
+            const metadata = {
+                customerName: meta.customerName,
+                fileName: file.name,
+                fileType: file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg'),
+                fileSize: totalBytes,
+                colorMode: meta.colorMode,
+                copies: meta.copies,
+                layoutType: meta.layoutType
+            };
+
+            // Step 1: Send start packet
+            conn.send({
+                type: 'start',
+                jobId: jobId,
+                metadata: metadata,
+                totalChunks: totalChunks
+            });
+
+            // Step 2: Stream 64KB chunks sequentially with WebRTC buffer backpressure check
+            for (let index = 0; index < totalChunks; index++) {
+                const start = index * CHUNK_SIZE_BYTES;
+                const end = Math.min(start + CHUNK_SIZE_BYTES, totalBytes);
+                const chunkSlice = arrayBuffer.slice(start, end);
+
+                while (conn.dataChannel && conn.dataChannel.bufferedAmount > 1024 * 1024) {
+                    await new Promise(r => setTimeout(r, 25));
+                }
+
+                conn.send({
+                    type: 'chunk',
+                    jobId: jobId,
+                    index: index,
+                    chunkByteLength: end - start,
+                    data: chunkSlice
+                });
+
+                updateCustomerProgressUI(file.name, end, totalBytes, index + 1, totalChunks);
+
+                if (index % 4 === 0) {
+                    await new Promise(r => setTimeout(r, 8));
+                }
+            }
+
+            // Step 3: Send end packet
+            conn.send({
+                type: 'end',
+                jobId: jobId
             });
         }
 
-        // =========================================================================
-        // SMART PRINT STUDIO MODAL (CROPPER.JS + FILTERS + A4 LAYOUT ENGINE)
-        // =========================================================================
-        function openStudioModal(jobId) {
-            const job = printJobs.find(j => j.id === jobId);
-            if (!job) return;
-            activeStudioJob = job;
+        // Same chunked protocol for local same-window testing
+        async function transferFileInChunksLocal(file, meta) {
+            const arrayBuffer = await file.arrayBuffer();
+            const totalBytes = arrayBuffer.byteLength;
+            const totalChunks = Math.max(1, Math.ceil(totalBytes / CHUNK_SIZE_BYTES));
+            const jobId = 'local-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
 
-            document.getElementById('studio-doc-title').innerText = `${job.customerName} • ${job.fileName} (${job.layoutType})`;
-            document.getElementById('studio-modal').classList.remove('hidden');
+            const metadata = {
+                customerName: meta.customerName,
+                fileName: file.name,
+                fileType: file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg'),
+                fileSize: totalBytes,
+                colorMode: meta.colorMode,
+                copies: meta.copies,
+                layoutType: meta.layoutType
+            };
 
-            // Preset studio controls based on customer's preference
-            document.getElementById('studio-bw-toggle').checked = (job.colorMode === 'B&W');
-            document.getElementById('studio-brightness').value = 105;
-            document.getElementById('studio-contrast').value = job.colorMode === 'B&W' ? 135 : 110;
-            document.getElementById('studio-tilt-slider').value = 0;
-            document.getElementById('tilt-val-label').innerText = '0°';
+            processIncomingPeerPacket({
+                type: 'start',
+                jobId: jobId,
+                metadata: metadata,
+                totalChunks: totalChunks
+            });
 
-            if (job.layoutType.includes('ID Card')) {
-                document.querySelector('input[name="studio-print-layout"][value="id-card"]').checked = true;
-            } else if (job.layoutType.includes('Passport')) {
-                document.querySelector('input[name="studio-print-layout"][value="passport-4"]').checked = true;
-            } else {
-                document.querySelector('input[name="studio-print-layout"][value="full-a4"]').checked = true;
+            for (let index = 0; index < totalChunks; index++) {
+                const start = index * CHUNK_SIZE_BYTES;
+                const end = Math.min(start + CHUNK_SIZE_BYTES, totalBytes);
+                const chunkSlice = arrayBuffer.slice(start, end);
+
+                processIncomingPeerPacket({
+                    type: 'chunk',
+                    jobId: jobId,
+                    index: index,
+                    chunkByteLength: end - start,
+                    data: chunkSlice
+                });
+
+                updateCustomerProgressUI(file.name, end, totalBytes, index + 1, totalChunks);
+
+                if (index % 3 === 0) {
+                    await new Promise(r => setTimeout(r, 10));
+                }
             }
 
-            const imgEl = document.getElementById('studio-cropper-img');
-            imgEl.src = job.fileUrl;
+            processIncomingPeerPacket({
+                type: 'end',
+                jobId: jobId
+            });
+        }
 
+        function completeCustomerTransferUI(count) {
+            const statusBox = document.getElementById('cust-transfer-status');
+            const sendBtn = document.getElementById('cust-send-btn');
+
+            statusBox.classList.remove('hidden');
+            statusBox.className = 'rounded-xl p-3.5 text-center text-sm font-semibold bg-emerald-50 text-emerald-800 border border-emerald-300';
+            statusBox.innerHTML = `✅ आपकी ${count} फाइल (100%) सफलतापूर्वक प्रिंट के लिए भेज दी गई है!`;
+            sendBtn.disabled = false;
+            stagedCustomerFiles = [];
+            renderStagedCustomerFiles();
+        }
+
+        function showCustomerTransferError(msg) {
+            const statusBox = document.getElementById('cust-transfer-status');
+            const sendBtn = document.getElementById('cust-send-btn');
+            statusBox.classList.remove('hidden');
+            statusBox.className = 'rounded-xl p-3.5 text-center text-sm font-semibold bg-red-50 text-red-700 border border-red-300';
+            statusBox.innerText = `❌ ${msg}`;
+            sendBtn.disabled = false;
+        }
+
+        // =========================================================================
+        // SKEWED SAMPLE ID CARD GENERATOR (FOR 4-POINT PERSPECTIVE CROP DEMO)
+        // =========================================================================
+        function createSkewedSampleDocumentData() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1200;
+            canvas.height = 850;
+            const ctx = canvas.getContext('2d');
+
+            // Wooden table style textured background
+            ctx.fillStyle = '#334155';
+            ctx.fillRect(0, 0, 1200, 850);
+
+            // First render a clean rectangular ID card onto an offscreen canvas
+            const cardCanvas = document.createElement('canvas');
+            cardCanvas.width = 860;
+            cardCanvas.height = 540;
+            const cCtx = cardCanvas.getContext('2d');
+
+            cCtx.fillStyle = '#ffffff';
+            cCtx.fillRect(0, 0, 860, 540);
+            cCtx.strokeStyle = '#0f172a';
+            cCtx.lineWidth = 8;
+            cCtx.strokeRect(4, 4, 852, 532);
+
+            // Header stripes
+            cCtx.fillStyle = '#ea580c';
+            cCtx.fillRect(8, 8, 844, 72);
+            cCtx.fillStyle = '#16a34a';
+            cCtx.fillRect(8, 80, 844, 20);
+
+            cCtx.fillStyle = '#ffffff';
+            cCtx.font = 'bold 30px sans-serif';
+            cCtx.fillText('भारत सरकार • GOVERNMENT OF INDIA', 145, 55);
+
+            // Photo Box
+            cCtx.fillStyle = '#e2e8f0';
+            cCtx.fillRect(45, 135, 190, 230);
+            cCtx.strokeStyle = '#475569';
+            cCtx.lineWidth = 3;
+            cCtx.strokeRect(45, 135, 190, 230);
+            cCtx.fillStyle = '#334155';
+            cCtx.font = 'bold 22px sans-serif';
+            cCtx.fillText('CITIZEN', 92, 245);
+            cCtx.fillText('PHOTO', 100, 275);
+
+            // Details
+            cCtx.fillStyle = '#0f172a';
+            cCtx.font = 'bold 30px sans-serif';
+            cCtx.fillText('नाम / Name: राजेश कुमार शर्मा', 270, 175);
+            cCtx.font = '25px sans-serif';
+            cCtx.fillText('जन्म तिथि / DOB: 15/08/1996', 270, 230);
+            cCtx.fillText('लिंग / Gender: पुरुष / MALE', 270, 280);
+            cCtx.fillText('पता: एम.जी. रोड, जयपुर (राजस्थान)', 270, 330);
+
+            // Bottom Number
+            cCtx.strokeStyle = '#dc2626';
+            cCtx.lineWidth = 3;
+            cCtx.beginPath();
+            cCtx.moveTo(30, 415);
+            cCtx.lineTo(830, 415);
+            cCtx.stroke();
+
+            cCtx.font = 'bold 46px monospace';
+            cCtx.fillStyle = '#0f172a';
+            cCtx.fillText('4829  7104  9382', 210, 485);
+
+            // Define 4 skewed perspective corners on the 1200x850 table canvas
+            const dstCorners = [
+                { x: 185, y: 145 }, // Top-Left
+                { x: 985, y: 85 },  // Top-Right (tilted up)
+                { x: 1065, y: 725 },// Bottom-Right (wider perspective)
+                { x: 110, y: 660 }  // Bottom-Left
+            ];
+
+            // Warp the rectangular card onto the skewed quad so the user can test 4-Point Perspective Straightening
+            const H = computeHomographyMatrix(
+                [
+                    { x: dstCorners[0].x, y: dstCorners[0].y },
+                    { x: dstCorners[1].x, y: dstCorners[1].y },
+                    { x: dstCorners[2].x, y: dstCorners[2].y },
+                    { x: dstCorners[3].x, y: dstCorners[3].y }
+                ],
+                [
+                    { x: 0, y: 0 },
+                    { x: 860, y: 0 },
+                    { x: 860, y: 540 },
+                    { x: 0, y: 540 }
+                ]
+            );
+
+            const srcImgData = cCtx.getImageData(0, 0, 860, 540);
+            const dstImgData = ctx.getImageData(0, 0, 1200, 850);
+            const srcPixels = srcImgData.data;
+            const dstPixels = dstImgData.data;
+
+            for (let y = 70; y < 740; y++) {
+                for (let x = 95; x < 1080; x++) {
+                    const denom = H[6] * x + H[7] * y + 1;
+                    if (Math.abs(denom) < 1e-6) continue;
+                    const u = (H[0] * x + H[1] * y + H[2]) / denom;
+                    const v = (H[3] * x + H[4] * y + H[5]) / denom;
+
+                    if (u >= 0 && u < 859 && v >= 0 && v < 539) {
+                        const ui = Math.floor(u);
+                        const vi = Math.floor(v);
+                        const sIdx = (vi * 860 + ui) * 4;
+                        const dIdx = (y * 1200 + x) * 4;
+                        dstPixels[dIdx] = srcPixels[sIdx];
+                        dstPixels[dIdx + 1] = srcPixels[sIdx + 1];
+                        dstPixels[dIdx + 2] = srcPixels[sIdx + 2];
+                        dstPixels[dIdx + 3] = 255;
+                    }
+                }
+            }
+            ctx.putImageData(dstImgData, 0, 0);
+
+            return {
+                canvas,
+                normalizedCorners: dstCorners.map(pt => ({
+                    x: pt.x / 1200,
+                    y: pt.y / 850
+                }))
+            };
+        }
+
+        function triggerSampleIncomingJob() {
+            const sample = createSkewedSampleDocumentData();
+            sample.canvas.toBlob((blob) => {
+                const blobUrl = URL.createObjectURL(blob);
+                // Save preset corners for instant demo accuracy
+                window.lastSamplePresetCorners = sample.normalizedCorners;
+                handleIncomingPrintJob({
+                    customerName: 'राजेश शर्मा (Skewed Camera Photo)',
+                    fileName: 'Skewed_Aadhaar_Camera.jpg',
+                    fileType: 'image/jpeg',
+                    fileSize: blob.size,
+                    colorMode: 'Color',
+                    copies: 1,
+                    layoutType: 'ID Card / Aadhaar Size',
+                    blobUrl: blobUrl
+                });
+            }, 'image/jpeg', 0.92);
+        }
+
+        async function simulateLargeChunkedTransfer() {
+            const sample = createSkewedSampleDocumentData();
+            sample.canvas.toBlob(async (imgBlob) => {
+                const realArrayBuf = await imgBlob.arrayBuffer();
+                const targetSize = Math.round(4.2 * 1024 * 1024); // 4.2 MB
+                const paddedBuffer = new Uint8Array(targetSize);
+                paddedBuffer.set(new Uint8Array(realArrayBuf), 0);
+
+                const totalChunks = Math.ceil(targetSize / CHUNK_SIZE_BYTES);
+                const jobId = 'sim4mb-' + Date.now();
+
+                showToast('⚡ 4.2 MB डॉक्यूमेंट का 64KB चंक्ड ट्रांसफर शुरू...', 'info');
+
+                processIncomingPeerPacket({
+                    type: 'start',
+                    jobId: jobId,
+                    totalChunks: totalChunks,
+                    metadata: {
+                        customerName: 'अमित वर्मा (4.2 MB High-Res PDF/Scan)',
+                        fileName: 'HighRes_Document_4.2MB.jpg',
+                        fileType: 'image/jpeg',
+                        fileSize: targetSize,
+                        colorMode: 'Color',
+                        copies: 2,
+                        layoutType: 'Full A4 Page'
+                    }
+                });
+
+                for (let index = 0; index < totalChunks; index++) {
+                    const start = index * CHUNK_SIZE_BYTES;
+                    const end = Math.min(start + CHUNK_SIZE_BYTES, targetSize);
+                    const slice = paddedBuffer.buffer.slice(start, end);
+
+                    processIncomingPeerPacket({
+                        type: 'chunk',
+                        jobId: jobId,
+                        index: index,
+                        chunkByteLength: end - start,
+                        data: slice
+                    });
+
+                    if (index % 2 === 0) {
+                        await new Promise(r => setTimeout(r, 15));
+                    }
+                }
+
+                processIncomingPeerPacket({
+                    type: 'end',
+                    jobId: jobId
+                });
+            }, 'image/jpeg', 0.95);
+        }
+
+        function loadLocalFileIntoQueue(event) {
+            const files = Array.from(event.target.files || []);
+            if (!files.length) return;
+
+            files.forEach((file) => {
+                const blobUrl = URL.createObjectURL(file);
+                handleIncomingPrintJob({
+                    customerName: 'Direct Counter File',
+                    fileName: file.name,
+                    fileType: file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg'),
+                    fileSize: file.size,
+                    colorMode: 'Color',
+                    copies: 1,
+                    layoutType: 'Full A4 Page',
+                    blobUrl: blobUrl
+                });
+            });
+            event.target.value = '';
+        }
+
+        // =========================================================================
+        // 4-POINT PERSPECTIVE CROP (HOMOGRAPHY MATRIX WARP + LOUPE MAGNIFIER)
+        // =========================================================================
+        function switchStudioCropMode(mode) {
+            currentStudioCropMode = mode;
+            const perspContainer = document.getElementById('persp-workspace-container');
+            const rectContainer = document.getElementById('rect-workspace-container');
+            const btnPersp = document.getElementById('mode-persp-btn');
+            const btnRect = document.getElementById('mode-rect-btn');
+            const tipBanner = document.getElementById('persp-tip-banner');
+
+            if (mode === 'perspective') {
+                perspContainer.classList.remove('hidden');
+                perspContainer.classList.add('flex');
+                rectContainer.classList.add('hidden');
+                rectContainer.classList.remove('flex');
+                tipBanner.classList.remove('hidden');
+
+                btnPersp.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 bg-cyan-500 text-slate-950 shadow';
+                btnRect.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 text-slate-300 hover:text-white';
+
+                setTimeout(() => {
+                    renderPerspectiveOverlay();
+                    updateFilteredPreview();
+                }, 40);
+            } else {
+                perspContainer.classList.add('hidden');
+                perspContainer.classList.remove('flex');
+                rectContainer.classList.remove('hidden');
+                rectContainer.classList.add('flex');
+                tipBanner.classList.add('hidden');
+
+                btnRect.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 bg-cyan-500 text-slate-950 shadow';
+                btnPersp.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 text-slate-300 hover:text-white';
+
+                initStandardCropperOnUrl(perspWorkingImageUrl);
+            }
+        }
+
+        function initStandardCropperOnUrl(imgUrl) {
+            const imgEl = document.getElementById('studio-cropper-img');
+            imgEl.src = imgUrl;
             if (cropperInstance) {
                 cropperInstance.destroy();
+                cropperInstance = null;
             }
-
             imgEl.onload = () => {
                 cropperInstance = new Cropper(imgEl, {
                     viewMode: 1,
                     dragMode: 'move',
-                    autoCropArea: 0.92,
+                    autoCropArea: 0.94,
                     restore: false,
                     guides: true,
                     center: true,
@@ -1177,6 +2083,439 @@
             };
         }
 
+        function autoDetectPerspectiveCorners() {
+            const imgEl = document.getElementById('persp-source-img');
+            if (!imgEl || !imgEl.naturalWidth) return;
+
+            // If this is our skewed sample card, snap directly to its exact corners
+            if (activeStudioJob && activeStudioJob.fileName === 'Skewed_Aadhaar_Camera.jpg' && window.lastSamplePresetCorners) {
+                perspPoints = window.lastSamplePresetCorners.map(pt => ({ x: pt.x, y: pt.y }));
+                renderPerspectiveOverlay();
+                showToast('✨ डॉक्यूमेंट के चारों कोने ऑटो-डिटेक्ट हो गए!', 'success');
+                return;
+            }
+
+            // Smart luminance contrast corner detector on a downscaled canvas
+            const w = 240;
+            const h = Math.round((imgEl.naturalHeight / imgEl.naturalWidth) * w) || 180;
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = w;
+            tempCanvas.height = h;
+            const ctx = tempCanvas.getContext('2d');
+            ctx.drawImage(imgEl, 0, 0, w, h);
+            const data = ctx.getImageData(0, 0, w, h).data;
+
+            // Estimate border background brightness from the 4 outer edges
+            const bgLum = (data[0] + data[1] + data[2]) / 3;
+            const brightPixels = [];
+
+            for (let y = 6; y < h - 6; y += 2) {
+                for (let x = 6; x < w - 6; x += 2) {
+                    const idx = (y * w + x) * 4;
+                    const lum = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
+                    if (Math.abs(lum - bgLum) > 42) {
+                        brightPixels.push({ x: x / w, y: y / h });
+                    }
+                }
+            }
+
+            if (brightPixels.length > 50) {
+                // Find extreme corners using (x+y) and (x-y) projections
+                let tl = brightPixels[0], tr = brightPixels[0], br = brightPixels[0], bl = brightPixels[0];
+                let minSum = Infinity, maxSum = -Infinity, minDiff = Infinity, maxDiff = -Infinity;
+
+                brightPixels.forEach(p => {
+                    const sum = p.x + p.y;
+                    const diff = p.x - p.y;
+                    if (sum < minSum) { minSum = sum; tl = p; }
+                    if (sum > maxSum) { maxSum = sum; br = p; }
+                    if (diff > maxDiff) { maxDiff = diff; tr = p; }
+                    if (diff < minDiff) { minDiff = diff; bl = p; }
+                });
+
+                perspPoints = [
+                    { x: Math.max(0.03, tl.x), y: Math.max(0.03, tl.y) },
+                    { x: Math.min(0.97, tr.x), y: Math.max(0.03, tr.y) },
+                    { x: Math.min(0.97, br.x), y: Math.min(0.97, br.y) },
+                    { x: Math.max(0.03, bl.x), y: Math.min(0.97, bl.y) }
+                ];
+            } else {
+                // Default 10% inset frame
+                perspPoints = [
+                    { x: 0.10, y: 0.10 },
+                    { x: 0.90, y: 0.10 },
+                    { x: 0.90, y: 0.90 },
+                    { x: 0.10, y: 0.90 }
+                ];
+            }
+
+            renderPerspectiveOverlay();
+            showToast('✨ चारों कोने सेट किए गए! आप इन्हें पकड़कर एडजस्ट कर सकते हैं।', 'info');
+        }
+
+        function renderPerspectiveOverlay() {
+            const imgEl = document.getElementById('persp-source-img');
+            const w = imgEl.clientWidth;
+            const h = imgEl.clientHeight;
+            if (!w || !h) return;
+
+            const handleIds = ['handle-tl', 'handle-tr', 'handle-br', 'handle-bl'];
+            const pxPoints = perspPoints.map(p => ({ x: p.x * w, y: p.y * h }));
+
+            pxPoints.forEach((pt, idx) => {
+                const el = document.getElementById(handleIds[idx]);
+                if (el) {
+                    el.style.left = `${pt.x}px`;
+                    el.style.top = `${pt.y}px`;
+                }
+            });
+
+            // Update SVG polygon & inner perspective grid lines
+            const poly = document.getElementById('persp-polygon');
+            poly.setAttribute('points', pxPoints.map(p => `${p.x},${p.y}`).join(' '));
+
+            const lerp = (a, b, t) => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
+
+            const h1Left = lerp(pxPoints[0], pxPoints[3], 0.333);
+            const h1Right = lerp(pxPoints[1], pxPoints[2], 0.333);
+            const h2Left = lerp(pxPoints[0], pxPoints[3], 0.666);
+            const h2Right = lerp(pxPoints[1], pxPoints[2], 0.666);
+
+            const v1Top = lerp(pxPoints[0], pxPoints[1], 0.333);
+            const v1Bot = lerp(pxPoints[3], pxPoints[2], 0.333);
+            const v2Top = lerp(pxPoints[0], pxPoints[1], 0.666);
+            const v2Bot = lerp(pxPoints[3], pxPoints[2], 0.666);
+
+            setSvgLine('persp-grid-h1', h1Left, h1Right);
+            setSvgLine('persp-grid-h2', h2Left, h2Right);
+            setSvgLine('persp-grid-v1', v1Top, v1Bot);
+            setSvgLine('persp-grid-v2', v2Top, v2Bot);
+        }
+
+        function setSvgLine(id, p1, p2) {
+            const line = document.getElementById(id);
+            if (!line) return;
+            line.setAttribute('x1', p1.x);
+            line.setAttribute('y1', p1.y);
+            line.setAttribute('x2', p2.x);
+            line.setAttribute('y2', p2.y);
+        }
+
+        function initPerspectiveDragHandlers() {
+            const innerBox = document.getElementById('persp-inner-box');
+            const loupe = document.getElementById('persp-loupe');
+
+            document.querySelectorAll('.persp-handle').forEach(handle => {
+                handle.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    activeDragCornerIdx = parseInt(handle.getAttribute('data-corner'), 10);
+                    handle.setPointerCapture(e.pointerId);
+                    updateLoupePreview(activeDragCornerIdx);
+                });
+
+                handle.addEventListener('pointermove', (e) => {
+                    if (activeDragCornerIdx === null) return;
+                    const rect = innerBox.getBoundingClientRect();
+                    if (!rect.width || !rect.height) return;
+
+                    const normX = Math.max(0.01, Math.min(0.99, (e.clientX - rect.left) / rect.width));
+                    const normY = Math.max(0.01, Math.min(0.99, (e.clientY - rect.top) / rect.height));
+
+                    perspPoints[activeDragCornerIdx] = { x: normX, y: normY };
+                    renderPerspectiveOverlay();
+                    updateLoupePreview(activeDragCornerIdx);
+                });
+
+                const endDrag = () => {
+                    if (activeDragCornerIdx !== null) {
+                        activeDragCornerIdx = null;
+                        loupe.classList.add('hidden');
+                    }
+                };
+                handle.addEventListener('pointerup', endDrag);
+                handle.addEventListener('pointercancel', endDrag);
+            });
+
+            window.addEventListener('resize', () => {
+                if (!document.getElementById('studio-modal').classList.contains('hidden')) {
+                    renderPerspectiveOverlay();
+                }
+            });
+        }
+
+        function updateLoupePreview(cornerIdx) {
+            const loupe = document.getElementById('persp-loupe');
+            const loupeCanvas = document.getElementById('persp-loupe-canvas');
+            const imgEl = document.getElementById('persp-source-img');
+            if (!imgEl || !imgEl.naturalWidth) return;
+
+            loupe.classList.remove('hidden');
+            const pt = perspPoints[cornerIdx];
+
+            // Move loupe to right side if user is dragging near top-left corner
+            if (pt.x < 0.35 && pt.y < 0.35) {
+                loupe.style.left = 'auto';
+                loupe.style.right = '12px';
+            } else {
+                loupe.style.right = 'auto';
+                loupe.style.left = '12px';
+            }
+
+            const ctx = loupeCanvas.getContext('2d');
+            const srcX = pt.x * imgEl.naturalWidth;
+            const srcY = pt.y * imgEl.naturalHeight;
+            const zoomRadius = 48;
+
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, 112, 112);
+            ctx.drawImage(
+                imgEl,
+                srcX - zoomRadius,
+                srcY - zoomRadius,
+                zoomRadius * 2,
+                zoomRadius * 2,
+                0,
+                0,
+                112,
+                112
+            );
+        }
+
+        // Solves 8x8 linear system to compute 3x3 Homography Matrix mapping dst(x,y) -> src(u,v)
+        function computeHomographyMatrix(srcPts, dstPts) {
+            const A = [];
+            const b = [];
+            for (let i = 0; i < 4; i++) {
+                const x = srcPts[i].x;
+                const y = srcPts[i].y;
+                const u = dstPts[i].x;
+                const v = dstPts[i].y;
+                A.push([x, y, 1, 0, 0, 0, -u * x, -u * y]);
+                b.push(u);
+                A.push([0, 0, 0, x, y, 1, -v * x, -v * y]);
+                b.push(v);
+            }
+
+            // Gaussian Elimination with partial pivoting
+            const n = 8;
+            for (let i = 0; i < n; i++) {
+                let maxRow = i;
+                for (let k = i + 1; k < n; k++) {
+                    if (Math.abs(A[k][i]) > Math.abs(A[maxRow][i])) maxRow = k;
+                }
+                [A[i], A[maxRow]] = [A[maxRow], A[i]];
+                [b[i], b[maxRow]] = [b[maxRow], b[i]];
+
+                const pivot = A[i][i] || 1e-12;
+                for (let j = i; j < n; j++) A[i][j] /= pivot;
+                b[i] /= pivot;
+
+                for (let k = 0; k < n; k++) {
+                    if (k !== i) {
+                        const factor = A[k][i];
+                        for (let j = i; j < n; j++) A[k][j] -= factor * A[i][j];
+                        b[k] -= factor * b[i];
+                    }
+                }
+            }
+            return [...b, 1]; // [h11, h12, h13, h21, h22, h23, h31, h32, 1]
+        }
+
+        // Executes 4-Point Perspective Homography Warp with Bilinear Interpolation
+        function applyPerspectiveWarp() {
+            const imgEl = document.getElementById('persp-source-img');
+            if (!imgEl || !imgEl.naturalWidth) return;
+
+            const natW = imgEl.naturalWidth;
+            const natH = imgEl.naturalHeight;
+
+            const srcQuad = perspPoints.map(p => ({
+                x: p.x * natW,
+                y: p.y * natH
+            }));
+
+            // Calculate destination width & height from average top/bottom and left/right edge lengths
+            const dist = (a, b) => Math.hypot(b.x - a.x, b.y - a.y);
+            const topW = dist(srcQuad[0], srcQuad[1]);
+            const botW = dist(srcQuad[3], srcQuad[2]);
+            const leftH = dist(srcQuad[0], srcQuad[3]);
+            const rightH = dist(srcQuad[1], srcQuad[2]);
+
+            let outW = Math.round(Math.max(topW, botW));
+            let outH = Math.round(Math.max(leftH, rightH));
+
+            // Cap max dimension at 1800px for instant responsive warp speed
+            const MAX_WARP_DIM = 1800;
+            if (outW > MAX_WARP_DIM || outH > MAX_WARP_DIM) {
+                const scale = MAX_WARP_DIM / Math.max(outW, outH);
+                outW = Math.round(outW * scale);
+                outH = Math.round(outH * scale);
+            }
+            outW = Math.max(200, outW);
+            outH = Math.max(140, outH);
+
+            const dstRect = [
+                { x: 0, y: 0 },
+                { x: outW - 1, y: 0 },
+                { x: outW - 1, y: outH - 1 },
+                { x: 0, y: outH - 1 }
+            ];
+
+            // Compute inverse Homography H mapping output (x,y) -> source (u,v)
+            const H = computeHomographyMatrix(dstRect, srcQuad);
+
+            // Read source pixels
+            const srcCanvas = document.createElement('canvas');
+            srcCanvas.width = natW;
+            srcCanvas.height = natH;
+            const sCtx = srcCanvas.getContext('2d');
+            sCtx.drawImage(imgEl, 0, 0);
+            const srcData = sCtx.getImageData(0, 0, natW, natH).data;
+
+            // Prepare destination canvas
+            const outCanvas = document.createElement('canvas');
+            outCanvas.width = outW;
+            outCanvas.height = outH;
+            const oCtx = outCanvas.getContext('2d');
+            const outImgData = oCtx.createImageData(outW, outH);
+            const dstData = outImgData.data;
+
+            // Bilinear Interpolation Warp Loop
+            for (let y = 0; y < outH; y++) {
+                for (let x = 0; x < outW; x++) {
+                    const denom = H[6] * x + H[7] * y + 1;
+                    const u = (H[0] * x + H[1] * y + H[2]) / denom;
+                    const v = (H[3] * x + H[4] * y + H[5]) / denom;
+
+                    const dIdx = (y * outW + x) * 4;
+
+                    if (u >= 0 && u < natW - 1 && v >= 0 && v < natH - 1) {
+                        const x0 = Math.floor(u);
+                        const y0 = Math.floor(v);
+                        const dx = u - x0;
+                        const dy = v - y0;
+
+                        const i00 = (y0 * natW + x0) * 4;
+                        const i10 = i00 + 4;
+                        const i01 = ((y0 + 1) * natW + x0) * 4;
+                        const i11 = i01 + 4;
+
+                        const w00 = (1 - dx) * (1 - dy);
+                        const w10 = dx * (1 - dy);
+                        const w01 = (1 - dx) * dy;
+                        const w11 = dx * dy;
+
+                        dstData[dIdx]     = srcData[i00] * w00 + srcData[i10] * w10 + srcData[i01] * w01 + srcData[i11] * w11;
+                        dstData[dIdx + 1] = srcData[i00 + 1] * w00 + srcData[i10 + 1] * w10 + srcData[i01 + 1] * w01 + srcData[i11 + 1] * w11;
+                        dstData[dIdx + 2] = srcData[i00 + 2] * w00 + srcData[i10 + 2] * w10 + srcData[i01 + 2] * w01 + srcData[i11 + 2] * w11;
+                        dstData[dIdx + 3] = 255;
+                    } else {
+                        dstData[dIdx] = 255;
+                        dstData[dIdx + 1] = 255;
+                        dstData[dIdx + 2] = 255;
+                        dstData[dIdx + 3] = 255;
+                    }
+                }
+            }
+
+            oCtx.putImageData(outImgData, 0, 0);
+            perspWarpedCanvas = outCanvas;
+            perspWorkingImageUrl = outCanvas.toDataURL('image/jpeg', 0.95);
+
+            // Update perspective stage image to the newly straightened flat image and reset handles to outer border
+            imgEl.onload = () => {
+                perspPoints = [
+                    { x: 0.02, y: 0.02 },
+                    { x: 0.98, y: 0.02 },
+                    { x: 0.98, y: 0.98 },
+                    { x: 0.02, y: 0.98 }
+                ];
+                renderPerspectiveOverlay();
+                updateFilteredPreview();
+            };
+            imgEl.src = perspWorkingImageUrl;
+
+            document.getElementById('undo-warp-btn').classList.remove('hidden');
+            showToast('✅ पर्सपेक्टिव क्रॉप सफल! तिरछा डॉक्यूमेंट एकदम सीधा हो गया।', 'success');
+        }
+
+        function undoPerspectiveWarp() {
+            if (!perspOriginalImageUrl) return;
+            perspWorkingImageUrl = perspOriginalImageUrl;
+            perspWarpedCanvas = null;
+
+            const imgEl = document.getElementById('persp-source-img');
+            imgEl.onload = () => {
+                autoDetectPerspectiveCorners();
+                updateFilteredPreview();
+            };
+            imgEl.src = perspOriginalImageUrl;
+            document.getElementById('undo-warp-btn').classList.add('hidden');
+            showToast('↩️ ओरिजिनल फोटो वापस आ गई।', 'info');
+        }
+
+        function rotateSourceImage90() {
+            const imgEl = document.getElementById('persp-source-img');
+            if (!imgEl || !imgEl.naturalWidth) return;
+
+            const canvas = document.createElement('canvas');
+            canvas.width = imgEl.naturalHeight;
+            canvas.height = imgEl.naturalWidth;
+            const ctx = canvas.getContext('2d');
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate(Math.PI / 2);
+            ctx.drawImage(imgEl, -imgEl.naturalWidth / 2, -imgEl.naturalHeight / 2);
+
+            perspWorkingImageUrl = canvas.toDataURL('image/jpeg', 0.95);
+            if (perspWarpedCanvas) perspWarpedCanvas = canvas;
+
+            imgEl.onload = () => {
+                renderPerspectiveOverlay();
+                updateFilteredPreview();
+            };
+            imgEl.src = perspWorkingImageUrl;
+        }
+
+        // =========================================================================
+        // SMART PRINT STUDIO MODAL CONTROLLER
+        // =========================================================================
+        function openStudioModal(jobId) {
+            const job = printJobs.find(j => j.id === jobId);
+            if (!job) return;
+            activeStudioJob = job;
+
+            document.getElementById('studio-doc-title').innerText = `${job.customerName} • ${job.fileName} (${job.fileSizeFormatted})`;
+            document.getElementById('studio-modal').classList.remove('hidden');
+
+            document.getElementById('studio-filter-mode').value = (job.colorMode === 'B&W') ? 'grayscale' : 'color';
+            document.getElementById('studio-brightness').value = 105;
+            document.getElementById('studio-contrast').value = job.colorMode === 'B&W' ? 135 : 115;
+            document.getElementById('undo-warp-btn').classList.add('hidden');
+
+            if (job.layoutType.includes('ID Card')) {
+                document.querySelector('input[name="studio-print-layout"][value="id-card"]').checked = true;
+            } else if (job.layoutType.includes('Passport')) {
+                document.querySelector('input[name="studio-print-layout"][value="passport-6"]').checked = true;
+            } else {
+                document.querySelector('input[name="studio-print-layout"][value="full-a4"]').checked = true;
+            }
+
+            perspOriginalImageUrl = job.fileUrl;
+            perspWorkingImageUrl = job.fileUrl;
+            perspWarpedCanvas = null;
+
+            const perspImg = document.getElementById('persp-source-img');
+            perspImg.onload = () => {
+                autoDetectPerspectiveCorners();
+                updateFilteredPreview();
+            };
+            perspImg.src = job.fileUrl;
+
+            // Default to 4-Point Perspective Mode
+            switchStudioCropMode('perspective');
+        }
+
         function closeStudioModal() {
             document.getElementById('studio-modal').classList.add('hidden');
             if (cropperInstance) {
@@ -1191,13 +2530,6 @@
             updateFilteredPreview();
         }
 
-        function applyFineTilt(val) {
-            document.getElementById('tilt-val-label').innerText = `${val}°`;
-            if (!cropperInstance) return;
-            cropperInstance.rotateTo(parseFloat(val));
-            updateFilteredPreview();
-        }
-
         function setCropRatio(ratio) {
             if (!cropperInstance) return;
             cropperInstance.setAspectRatio(ratio);
@@ -1207,32 +2539,42 @@
         function resetCropperStudio() {
             if (!cropperInstance) return;
             cropperInstance.reset();
-            document.getElementById('studio-tilt-slider').value = 0;
-            document.getElementById('tilt-val-label').innerText = '0°';
             document.getElementById('studio-brightness').value = 105;
             document.getElementById('studio-contrast').value = 120;
             updateFilteredPreview();
         }
 
-        // Generate Cropped + Enhanced Canvas (B&W Document Cleaner, Brightness & Contrast)
         function getEnhancedCanvas() {
-            if (!cropperInstance) return null;
+            let baseCanvas = null;
 
-            const rawCanvas = cropperInstance.getCroppedCanvas({
-                maxWidth: 2400,
-                maxHeight: 2400,
-                fillColor: '#ffffff'
-            });
-            if (!rawCanvas) return null;
+            if (currentStudioCropMode === 'rectangle' && cropperInstance) {
+                baseCanvas = cropperInstance.getCroppedCanvas({
+                    maxWidth: 2400,
+                    maxHeight: 2400,
+                    fillColor: '#ffffff'
+                });
+            } else if (perspWarpedCanvas) {
+                baseCanvas = perspWarpedCanvas;
+            } else {
+                const imgEl = document.getElementById('persp-source-img');
+                if (imgEl && imgEl.naturalWidth) {
+                    baseCanvas = document.createElement('canvas');
+                    baseCanvas.width = imgEl.naturalWidth;
+                    baseCanvas.height = imgEl.naturalHeight;
+                    baseCanvas.getContext('2d').drawImage(imgEl, 0, 0);
+                }
+            }
+
+            if (!baseCanvas) return null;
 
             const outCanvas = document.createElement('canvas');
-            outCanvas.width = rawCanvas.width;
-            outCanvas.height = rawCanvas.height;
+            outCanvas.width = baseCanvas.width;
+            outCanvas.height = baseCanvas.height;
             const ctx = outCanvas.getContext('2d');
 
-            const isBw = document.getElementById('studio-bw-toggle').checked;
-            const brightness = document.getElementById('studio-brightness').value;
-            const contrast = document.getElementById('studio-contrast').value;
+            const filterMode = document.getElementById('studio-filter-mode').value;
+            const brightness = parseInt(document.getElementById('studio-brightness').value, 10) || 105;
+            const contrast = parseInt(document.getElementById('studio-contrast').value, 10) || 120;
 
             document.getElementById('bright-label').innerText = `${brightness}%`;
             document.getElementById('contrast-label').innerText = `${contrast}%`;
@@ -1240,9 +2582,16 @@
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, outCanvas.width, outCanvas.height);
 
-            // Apply crisp CSS filter on canvas context
-            ctx.filter = `${isBw ? 'grayscale(100%)' : ''} brightness(${brightness}%) contrast(${contrast}%)`;
-            ctx.drawImage(rawCanvas, 0, 0);
+            if (filterMode === 'grayscale') {
+                ctx.filter = `grayscale(100%) brightness(${brightness}%) contrast(${contrast}%)`;
+                ctx.drawImage(baseCanvas, 0, 0);
+            } else if (filterMode === 'bw-scan') {
+                ctx.filter = `grayscale(100%) brightness(${brightness + 8}%) contrast(${Math.max(165, contrast + 45)}%)`;
+                ctx.drawImage(baseCanvas, 0, 0);
+            } else {
+                ctx.filter = `brightness(${brightness}%) contrast(${contrast}%)`;
+                ctx.drawImage(baseCanvas, 0, 0);
+            }
 
             return outCanvas;
         }
@@ -1265,7 +2614,7 @@
             link.download = `Cleaned_${activeStudioJob ? activeStudioJob.fileName : 'Document.jpg'}`;
             link.href = enhanced.toDataURL('image/jpeg', 0.95);
             link.click();
-            showToast('💾 साफ की गई इमेज डाउनलोड हो गई!', 'success');
+            showToast('💾 साफ और सीधी की गई इमेज डाउनलोड हो गई!', 'success');
         }
 
         function executeStudioPrint() {
@@ -1277,21 +2626,18 @@
             const printArea = document.getElementById('printable-area');
 
             if (selectedLayout === 'id-card') {
-                // Standard CR80 ID Card / Aadhaar Card Size (86mm x 54mm) centered at top of A4
                 printArea.innerHTML = `
                     <div style="padding-top: 12mm; text-align: center;">
                         <img src="${finalDataUrl}" style="width: 86mm; height: 54mm; object-fit: fill; border: 1px dashed #94a3b8; padding: 1.5mm;" />
                     </div>
                 `;
             } else if (selectedLayout === 'half-a4') {
-                // Top Half of A4 Page (Max height 135mm)
                 printArea.innerHTML = `
                     <div style="padding-top: 5mm; text-align: center;">
                         <img src="${finalDataUrl}" style="max-width: 190mm; max-height: 135mm; object-fit: contain;" />
                     </div>
                 `;
-            } else if (selectedLayout === 'passport-4') {
-                // 6 Passport Size Photos (35mm x 45mm) in a neat top row
+            } else if (selectedLayout === 'passport-6') {
                 let photosHtml = '';
                 for (let i = 0; i < 6; i++) {
                     photosHtml += `<img src="${finalDataUrl}" style="width: 35mm; height: 45mm; object-fit: cover; border: 1px solid #000; margin: 2mm;" />`;
@@ -1302,7 +2648,6 @@
                     </div>
                 `;
             } else {
-                // Full A4 Fit
                 printArea.innerHTML = `
                     <div style="text-align: center; display: flex; align-items: center; justify-content: center; height: 277mm;">
                         <img src="${finalDataUrl}" style="max-width: 194mm; max-height: 275mm; object-fit: contain;" />
